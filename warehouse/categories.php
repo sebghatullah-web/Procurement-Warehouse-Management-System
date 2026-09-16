@@ -4,7 +4,7 @@
  */
 require_once __DIR__ . '/../includes/auth.php';
 $user = require_role('warehouse_manager', 'admin');
-$page_title = 'Item Categories';
+$page_title = 'دسته‌بندی کالاها';
 $base = BASE_URL;
 
 $id  = (int)($_GET['id'] ?? 0);
@@ -18,14 +18,14 @@ if (is_post()) {
     $name   = trim($old['name'] ?? '');
     $desc   = trim($old['description'] ?? '');
     if ($action === 'add' || $action === 'update') {
-        if ($name === '') { $errors[] = 'Category name is required.'; }
+        if ($name === '') { $errors[] = 'نام دسته‌بندی الزامی است.'; }
         elseif (count($errors) === 0) {
             $descSql = $desc === '' ? 'NULL' : "'" . esc($desc) . "'";
             $ok = ($action === 'add')
                 ? exec_sql("INSERT INTO categories (name, description) VALUES ('" . esc($name) . "', $descSql)")
                 : exec_sql("UPDATE categories SET name='" . esc($name) . "', description=$descSql WHERE id=$id");
             if ($ok) {
-                flash_set('success', 'Category saved: ' . $name);
+                flash_set('success', 'دسته‌بندی ذخیره شد: ' . $name);
                 redirect_to($base . '/warehouse/categories.php');
             }
             $errors[] = last_error();
@@ -35,11 +35,11 @@ if (is_post()) {
         if ($delId > 0) {
             $used = fetch_one("SELECT COUNT(*) n FROM warehouse_items WHERE category_id=$delId");
             if ((int)$used['n'] > 0) {
-                flash_set('warning', $used['n'] . ' warehouse item(s) still use this category - reassign them first.');
+                flash_set('warning', $used['n'] . ' کالای انبار هنوز از این دسته‌بندی استفاده می‌کنند - ابتدا آن‌ها را تغییر دهید.');
             } else {
                 exec_sql("DELETE FROM categories WHERE id=$delId");
                 flash_set($conn->errno === 0 ? 'success' : 'danger',
-                          $conn->errno === 0 ? 'Category removed.' : $conn->error);
+                          $conn->errno === 0 ? 'دسته‌بندی حذف شد.' : $conn->error);
             }
         }
         redirect_to($base . '/warehouse/categories.php');
@@ -51,14 +51,14 @@ $cats = fetch_all("SELECT c.*, (SELECT COUNT(*) FROM warehouse_items w WHERE w.c
 require_once __DIR__ . '/../includes/header.php';
 ?>
 <?php if ($edit): ?>
-<div class="alert alert-info"><i class="bi bi-pencil-square me-2"></i>Editing: <strong><?php echo h($edit['name']); ?></strong>
-  <a class="float-end" href="<?php echo $base; ?>/warehouse/categories.php">Cancel edit</a></div>
+<div class="alert alert-info"><i class="bi bi-pencil-square me-2"></i>در حال ویرایش: <strong><?php echo h($edit['name']); ?></strong>
+  <a class="float-end" href="<?php echo $base; ?>/warehouse/categories.php">لغو ویرایش</a></div>
 <?php endif; ?>
 
 <div class="row g-4">
   <div class="col-lg-5">
     <div class="card h-100">
-      <div class="card-header"><?php echo $edit ? 'Update Category' : 'Add Category'; ?></div>
+      <div class="card-header"><?php echo $edit ? 'به‌روزرسانی دسته‌بندی' : 'افزودن دسته‌بندی'; ?></div>
       <div class="card-body">
         <?php if (count($errors) > 0): ?>
           <div class="alert alert-danger py-2"><?php foreach ($errors as $e): ?><div><?php echo h($e); ?></div><?php endforeach; ?></div>
@@ -66,24 +66,24 @@ require_once __DIR__ . '/../includes/header.php';
         <form method="post">
           <input type="hidden" name="action" value="<?php echo $edit ? 'update' : 'add'; ?>">
           <div class="mb-2">
-            <label class="form-label required">Category Name</label>
+            <label class="form-label required">نام دسته‌بندی</label>
             <input type="text" name="name" class="form-control" required value="<?php echo h($edit ? $edit['name'] : ($old['name'] ?? '')); ?>">
           </div>
           <div class="mb-2">
-            <label class="form-label">Description</label>
+            <label class="form-label">توضیحات</label>
             <input type="text" name="description" class="form-control" value="<?php echo h($edit ? ($edit['description'] ?? '') : ($old['description'] ?? '')); ?>">
           </div>
-          <button class="btn btn-primary" type="submit"><i class="bi bi-floppy me-2"></i>Save Category</button>
+          <button class="btn btn-primary" type="submit"><i class="bi bi-floppy me-2"></i>ذخیره دسته‌بندی</button>
         </form>
       </div>
     </div>
   </div>
   <div class="col-lg-7">
     <div class="card h-100">
-      <div class="card-header">Categories <span class="text-muted small">(<?php echo count($cats); ?>)</span></div>
+      <div class="card-header">دسته‌بندی‌ها <span class="text-muted small">(<?php echo count($cats); ?>)</span></div>
       <div class="table-responsive">
         <table class="table table-sm align-middle mb-0">
-          <thead><tr><th>Name</th><th>Description</th><th>Items</th><th class="text-end">Actions</th></tr></thead>
+          <thead><tr><th>نام</th><th>توضیحات</th><th>اقلام</th><th class="text-end">عملیات</th></tr></thead>
           <tbody>
           <?php foreach ($cats as $c): ?>
             <tr>
@@ -92,7 +92,7 @@ require_once __DIR__ . '/../includes/header.php';
               <td><?php echo (int)$c['item_count']; ?></td>
               <td class="table-actions text-end">
                 <a class="btn btn-sm btn-outline-primary" href="categories.php?id=<?php echo $c['id']; ?>"><i class="bi bi-pencil-square"></i></a>
-                <form method="post" class="d-inline" onsubmit="return confirm('Delete category &quot;<?php echo h($c['name']); ?>&quot;?');">
+                <form method="post" class="d-inline" onsubmit="return confirm('حذف دسته‌بندی &quot;<?php echo h($c['name']); ?>&quot;؟');">
                   <input type="hidden" name="action" value="delete">
                   <input type="hidden" name="del_id" value="<?php echo $c['id']; ?>">
                   <button class="btn btn-sm btn-outline-danger" type="submit"><i class="bi bi-trash3"></i></button>
@@ -101,7 +101,7 @@ require_once __DIR__ . '/../includes/header.php';
             </tr>
           <?php endforeach; ?>
           <?php if (count($cats) === 0): ?>
-            <tr><td colspan="4" class="text-center text-muted py-3">No categories yet - add one.</td></tr>
+            <tr><td colspan="4" class="text-center text-muted py-3">هنوز دسته‌بندی وجود ندارد - یکی اضافه کنید.</td></tr>
           <?php endif; ?>
           </tbody>
         </table>

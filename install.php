@@ -53,25 +53,27 @@ if (strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     }
 }
 
-echo '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Installer</title>'
+echo '<!DOCTYPE html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><title>نصب‌کننده</title>'
    . '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">'
+   . '<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">'
+   . '<style>body{font-family:"Vazirmatn","Segoe UI",Tahoma,Arial,sans-serif;}</style>'
    . '</head><body class="bg-light"><div class="container" style="max-width:720px">
    <div class="card shadow-sm mt-5"><div class="card-body">
-   <h3 class="mb-1"><i class="bi bi-tools"></i> PWMS Installer</h3>
-   <p class="text-muted small">Creates/refreshes the <code>' . h($dbName) . '</code> database from
-   <code>database/procurement_warehouse.sql</code>.</p>';
+   <h3 class="mb-1"><i class="bi bi-tools"></i> نصب‌کننده PWMS</h3>
+   <p class="text-muted small">پایگاه داده <code>' . h($dbName) . '</code> را از
+   <code>database/procurement_warehouse.sql</code> می‌سازد/تازه می‌کند.</p>';
 
 if ($error) {
     echo '<div class="alert alert-danger">' . $error . '</div>';
 } elseif ($report) {
-    echo '<div class="alert alert-success"><h5>Installation successful</h5><ul>'
+    echo '<div class="alert alert-success"><h5>نصب با موفقیت انجام شد</h5><ul>'
        . implode('</li><li>', $report) . '</li></ul></div>';
-    echo '<a class="btn btn-primary" href="login.php">Go to sign-in page &rarr;</a> ';
-    echo '<span class="text-muted small ms-2">Delete install.php for production.</span>';
+    echo '<a class="btn btn-primary" href="login.php">رفتن به صفحه ورود &larr;</a> ';
+    echo '<span class="text-muted small ms-2">برای محیط تولید، install.php را حذف کنید.</span>';
 } else {
-    echo '<div class="alert alert-warning">This will <strong>drop and recreate</strong> every table in <code>'
-       . h($dbName) . '</code> if it already exists. Run only on a local/development machine.</div>';
+    echo '<div class="alert alert-warning">این کار اگر پایگاه داده <code>'
+       . h($dbName) . '</code> از قبل وجود داشته باشد، همه جدول‌های آن را <strong>حذف و دوباره می‌سازد</strong>. فقط در محیط توسعه/محلی اجرا کنید.</div>';
     echo '<form method="post"><button class="btn btn-danger btn-lg" type="submit">'
-       . '<i class="bi bi-cone-striped me-1"></i> Install database now</button></form>';
+       . '<i class="bi bi-cone-striped me-1"></i> نصب پایگاه داده از حالا</button></form>';
 }
 echo '</div></div></div></body></html>';

@@ -4,13 +4,13 @@
  */
 require_once __DIR__ . '/../includes/auth.php';
 $user = require_login();
-$page_title = 'Purchase Detail';
+$page_title = 'جزئیات خرید';
 $base = BASE_URL;
 $role = $user['role'];
 $isPro = in_array($role, ['procurement_manager','admin'], true);
 
 $id = (int)($_GET['id'] ?? 0);
-if ($id <= 0) { flash_set('danger', 'Invalid purchase.'); redirect_to($base . '/purchases/list.php'); }
+if ($id <= 0) { flash_set('danger', 'خرید نامعتبر است.'); redirect_to($base . '/purchases/list.php'); }
 
 $p = fetch_one("SELECT p.*, r.request_no, r.item_name AS req_item, r.department_id,
                        r.quantity AS req_qty, r.unit AS req_unit, r.urgency, r.direct_delivery,
@@ -21,7 +21,7 @@ $p = fetch_one("SELECT p.*, r.request_no, r.item_name AS req_item, r.department_
                 LEFT JOIN suppliers s ON s.id=p.supplier_id
                 WHERE p.id=$id");
 
-if (!$p) { flash_set('danger', 'Purchase not found.'); redirect_to($base . '/purchases/list.php'); }
+if (!$p) { flash_set('danger', 'خرید یافت نشد.'); redirect_to($base . '/purchases/list.php'); }
 
 $errors = [];
 if (is_post()) {
@@ -31,50 +31,50 @@ if (is_post()) {
         $price = (float)($_POST['price'] ?? 0);
         $days  = (int)($_POST['delivery_days'] ?? 0);
         $note  = trim($_POST['quote_note'] ?? '');
-        if ($sid <= 0 || $price <= 0) { $errors[] = 'Supplier and valid price are required.'; }
+        if ($sid <= 0 || $price <= 0) { $errors[] = 'تأمین‌کننده و قیمت معتبر الزامی است.'; }
         else {
             $ok = exec_sql("INSERT INTO quotations (request_id, supplier_id, price, delivery_days, notes)
                             VALUES (" . (int)$p['request_id'] . ", $sid, $price, " . ($days ?: 'NULL') . ", '" . esc($note) . "')");
-            if ($ok) { flash_set('success', 'Quotation added.'); redirect_to($base . '/purchases/view.php?id=' . $id); }
+            if ($ok) { flash_set('success', 'قیمت اضافه شد.'); redirect_to($base . '/purchases/view.php?id=' . $id); }
             $errors[] = last_error();
         }
     } elseif ($action === 'submit_committee' && $isPro) {
         $ok = exec_sql("UPDATE purchases SET status='committee_pending', committee_note='" . esc(trim($_POST['committee_note'] ?? '')) . "' WHERE id=$id");
-        if ($ok) { flash_set('success', 'Submitted to committee.'); redirect_to($base . '/purchases/view.php?id=' . $id); }
+        if ($ok) { flash_set('success', 'برای کمیته ارسال شد.'); redirect_to($base . '/purchases/view.php?id=' . $id); }
         $errors[] = last_error();
     } elseif ($action === 'committee_decision') {
         $member = trim($_POST['member_name'] ?? '');
         $mrole  = trim($_POST['member_role'] ?? 'finance');
         $dec    = trim($_POST['decision'] ?? 'approved');
         $comment= trim($_POST['comment'] ?? '');
-        if ($member === '') { $errors[] = 'Member name required.'; }
+        if ($member === '') { $errors[] = 'نام عضو الزامی است.'; }
         else {
             $ok = exec_sql("INSERT INTO committee_approvals (purchase_id, member_name, member_role, decision, comment)
                             VALUES ($id, '" . esc($member) . "', '" . esc($mrole) . "', '" . esc($dec) . "', '" . esc($comment) . "')");
             if ($ok) {
                 $newStatus = ($dec === 'approved') ? 'approved' : 'rejected';
                 exec_sql("UPDATE purchases SET status='" . esc($newStatus) . "' WHERE id=$id");
-                flash_set('success', 'Decision recorded: ' . ucfirst($dec) . '.');
+                flash_set('success', 'تصمیم ثبت شد: ' . ucfirst($dec) . '.');
                 redirect_to($base . '/purchases/view.php?id=' . $id);
             }
             $errors[] = last_error();
         }
     } elseif ($action === 'resubmit' && $isPro) {
         $ok = exec_sql("UPDATE purchases SET status='quotation', committee_note=NULL WHERE id=$id");
-        if ($ok) { flash_set('success', 'Re-opened for revision.'); redirect_to($base . '/purchases/view.php?id=' . $id); }
+        if ($ok) { flash_set('success', 'برای بازبینی دوباره باز شد.'); redirect_to($base . '/purchases/view.php?id=' . $id); }
         $errors[] = last_error();
     } elseif ($action === 'finalize' && $isPro) {
         $quotePath = trim($_POST['quote_path'] ?? '');
         $supId     = (int)($_POST['supplier_id'] ?? 0);
         $unitPrice = (float)($_POST['unit_price'] ?? 0);
         $pDate     = trim($_POST['purchase_date'] ?? today());
-        if ($unitPrice <= 0) { $errors[] = 'Unit price must be greater than zero.'; }
+        if ($unitPrice <= 0) { $errors[] = 'قیمت واحد باید بزرگتر از صفر باشد.'; }
         else {
             $supSql = ($supId > 0) ? ", supplier_id=$supId" : '';
             $total  = $unitPrice * (float)$p['quantity'];
             $ok = exec_sql("UPDATE purchases SET unit_price=$unitPrice, total_cost=$total,
                             purchase_date='" . esc($pDate) . "', status='ordered'$supSql WHERE id=$id");
-            if ($ok) { flash_set('success', 'Order finalized @ ' . money0($unitPrice) . ' PKR/unit.'); redirect_to($base . '/purchases/view.php?id=' . $id); }
+            if ($ok) { flash_set('success', 'سفارش نهایی شد @ ' . money0($unitPrice) . ' PKR/واحد.'); redirect_to($base . '/purchases/view.php?id=' . $id); }
             $errors[] = last_error();
         }
     }
@@ -103,22 +103,22 @@ require_once __DIR__ . '/../includes/header.php';
   </div>
   <div class="card-body">
     <div class="row">
-      <div class="col-md-3"><strong>Request</strong><br><a href="<?php echo $base; ?>/requests/view.php?id=<?php echo $p['request_id']; ?>"><?php echo h($p['request_no']); ?></a></div>
-      <div class="col-md-3"><strong>Department</strong><br><?php echo h($p['dept']); ?></div>
-      <div class="col-md-2"><strong>Qty</strong><br><?php echo xnum($p['quantity']); ?> <?php echo h($p['req_unit']); ?></div>
-      <div class="col-md-2"><strong>Urgency</strong><br><?php echo badge($p['urgency']); ?></div>
-      <div class="col-md-2"><strong>Direct delivery</strong><br><?php echo $p['direct_delivery'] ? 'Yes' : 'No'; ?></div>
+      <div class="col-md-3"><strong>درخواست</strong><br><a href="<?php echo $base; ?>/requests/view.php?id=<?php echo $p['request_id']; ?>"><?php echo h($p['request_no']); ?></a></div>
+      <div class="col-md-3"><strong>اداره</strong><br><?php echo h($p['dept']); ?></div>
+      <div class="col-md-2"><strong>تعداد</strong><br><?php echo xnum($p['quantity']); ?> <?php echo h($p['req_unit']); ?></div>
+      <div class="col-md-2"><strong>فوریت</strong><br><?php echo badge($p['urgency']); ?></div>
+      <div class="col-md-2"><strong>تحویل مستقیم</strong><br><?php echo $p['direct_delivery'] ? 'بله' : 'خیر'; ?></div>
       <?php if ($p['supplier_name']): ?>
-      <div class="col-md-3"><strong>Supplier</strong><br><?php echo h($p['supplier_name']); ?></div>
+      <div class="col-md-3"><strong>تأمین‌کننده</strong><br><?php echo h($p['supplier_name']); ?></div>
       <?php endif; ?>
       <?php if ($p['total_cost']): ?>
-      <div class="col-md-3"><strong>Total Cost</strong><br class="text-nowrap"><?php echo money0($p['total_cost']); ?> PKR</div>
+      <div class="col-md-3"><strong>مجموع هزینه</strong><br class="text-nowrap"><?php echo money0($p['total_cost']); ?> PKR</div>
       <?php endif; ?>
       <?php if ($p['purchase_date']): ?>
-      <div class="col-md-3"><strong>Purchase Date</strong><br class="text-nowrap"><?php echo h($p['purchase_date']); ?></div>
+      <div class="col-md-3"><strong>تاریخ خرید</strong><br class="text-nowrap"><?php echo h($p['purchase_date']); ?></div>
       <?php endif; ?>
       <?php if ($p['payment_status']): ?>
-      <div class="col-md-3"><strong>Payment</strong><br><?php echo badge($p['payment_status']); ?></div>
+      <div class="col-md-3"><strong>پرداخت</strong><br><?php echo badge($p['payment_status']); ?></div>
       <?php endif; ?>
     </div>
     <?php if (count($errors) > 0): ?>
@@ -129,32 +129,32 @@ require_once __DIR__ . '/../includes/header.php';
 
 <?php if ($isPro && in_array($p['status'], ['draft','quotation'], true)): ?>
 <div class="card mb-3">
-  <div class="card-header"><i class="bi bi-tags me-2"></i>Add Quotation (need at least 3 for normal purchases)</div>
+  <div class="card-header"><i class="bi bi-tags me-2"></i>افزودن قیمت (برای خرید عادی حداقل 3 قیمت لازم است)</div>
   <div class="card-body">
     <form method="post" class="row g-2">
       <input type="hidden" name="action" value="add_quote">
       <div class="col-md-4">
         <select name="supplier_id" class="form-select" required>
-          <option value="">-- supplier --</option>
+          <option value="">-- تأمین‌کننده --</option>
           <?php foreach ($suppliers as $s): ?>
           <option value="<?php echo $s['id']; ?>"><?php echo h($s['name']); ?></option>
           <?php endforeach; ?>
         </select>
       </div>
-      <div class="col-md-2"><input type="number" name="price" class="form-control" placeholder="Unit price (PKR)" required min="0.01" step="any"></div>
-      <div class="col-md-2"><input type="number" name="delivery_days" class="form-control" placeholder="Days" min="0"></div>
-      <div class="col-md-3"><input type="text" name="quote_note" class="form-control" placeholder="Note (optional)"></div>
-      <div class="col-md-1"><button class="btn btn-primary w-100" type="submit">Add</button></div>
+      <div class="col-md-2"><input type="number" name="price" class="form-control" placeholder="قیمت واحد (PKR)" required min="0.01" step="any"></div>
+      <div class="col-md-2"><input type="number" name="delivery_days" class="form-control" placeholder="روز" min="0"></div>
+      <div class="col-md-3"><input type="text" name="quote_note" class="form-control" placeholder="یادداشت (اختیاری)"></div>
+      <div class="col-md-1"><button class="btn btn-primary w-100" type="submit">افزودن</button></div>
     </form>
   </div>
 </div>
 <?php endif; ?>
 <?php if (count($quotations) > 0): ?>
 <div class="card mb-3">
-  <div class="card-header"><i class="bi bi-tags me-2"></i>Quotations (<?php echo count($quotations); ?>)</div>
+  <div class="card-header"><i class="bi bi-tags me-2"></i>قیمت‌ها (<?php echo count($quotations); ?>)</div>
   <div class="table-responsive">
     <table class="table table-sm table-hover align-middle mb-0">
-      <thead><tr><th>Supplier</th><th>Unit Price (PKR)</th><th>Delivery (days)</th><th>Notes</th></tr></thead>
+      <thead><tr><th>تأمین‌کننده</th><th>قیمت واحد (PKR)</th><th>تحویل (روز)</th><th>یادداشت‌ها</th></tr></thead>
       <tbody>
       <?php foreach ($quotations as $qt): ?>
         <tr><td><?php echo h($qt['supplier']); ?></td>
@@ -170,13 +170,13 @@ require_once __DIR__ . '/../includes/header.php';
 
 <?php if ($isPro && in_array($p['status'], ['draft','quotation'], true) && count($quotations) > 0): ?>
 <div class="card mb-3">
-  <div class="card-header"><i class="bi bi-people me-2"></i>Submit To Committee</div>
+  <div class="card-header"><i class="bi bi-people me-2"></i>ارسال به کمیته</div>
   <div class="card-body">
     <form method="post">
       <input type="hidden" name="action" value="submit_committee">
       <div class="row g-2">
-        <div class="col-md-8"><input type="text" name="committee_note" class="form-control" placeholder="Note for committee (optional)"></div>
-        <div class="col-md-4"><button class="btn btn-primary w-100" type="submit"><i class="bi bi-send-check me-1"></i>Submit For Approval</button></div>
+        <div class="col-md-8"><input type="text" name="committee_note" class="form-control" placeholder="یادداشت برای کمیته (اختیاری)"></div>
+        <div class="col-md-4"><button class="btn btn-primary w-100" type="submit"><i class="bi bi-send-check me-1"></i>ارسال برای تأیید</button></div>
       </div>
     </form>
   </div>
@@ -185,24 +185,24 @@ require_once __DIR__ . '/../includes/header.php';
 
 <?php if ($p['status'] === 'committee_pending' && in_array($role, ['committee','procurement_manager','admin'], true)): ?>
 <div class="card mb-3 border-primary">
-  <div class="card-header bg-primary-subtle text-primary-emphasis"><i class="bi bi-people me-2"></i>Committee Decision</div>
+  <div class="card-header bg-primary-subtle text-primary-emphasis"><i class="bi bi-people me-2"></i>تصمیم کمیته</div>
   <div class="card-body">
     <form method="post" class="row g-2">
       <input type="hidden" name="action" value="committee_decision">
-      <div class="col-md-3"><label class="form-label required">Member Name</label>
-        <input type="text" name="member_name" class="form-control" required placeholder="e.g. Faisal - Finance"></div>
-      <div class="col-md-3"><label class="form-label">Role</label>
+      <div class="col-md-3"><label class="form-label required">نام عضو</label>
+        <input type="text" name="member_name" class="form-control" required placeholder="مثلاً فیصل - مالی"></div>
+      <div class="col-md-3"><label class="form-label">نقش</label>
         <select name="member_role" class="form-select">
-          <option value="finance">Finance</option><option value="management">Management</option>
-          <option value="procurement">Procurement</option>
+          <option value="finance">مالی</option><option value="management">مدیریت</option>
+          <option value="procurement">تدارکات</option>
         </select></div>
-      <div class="col-md-2"><label class="form-label required">Decision</label>
+      <div class="col-md-2"><label class="form-label required">تصمیم</label>
         <select name="decision" class="form-select">
-          <option value="approved">Approve</option><option value="rejected">Reject</option>
+          <option value="approved">تصویب</option><option value="rejected">رد</option>
         </select></div>
-      <div class="col-md-4"><label class="form-label">Comment</label>
-        <input type="text" name="comment" class="form-control" placeholder="Optional"></div>
-      <div class="col-12"><button class="btn btn-success" type="submit"><i class="bi bi-check2 me-1"></i>Submit Decision</button></div>
+      <div class="col-md-4"><label class="form-label">نظر</label>
+        <input type="text" name="comment" class="form-control" placeholder="اختیاری"></div>
+      <div class="col-12"><button class="btn btn-success" type="submit"><i class="bi bi-check2 me-1"></i>ثبت تصمیم</button></div>
     </form>
   </div>
 </div>
@@ -212,54 +212,54 @@ require_once __DIR__ . '/../includes/header.php';
 <div class="card mb-3">
   <div class="card-body">
     <form method="post"><input type="hidden" name="action" value="resubmit">
-      <button class="btn btn-outline-primary" type="submit"><i class="bi bi-arrow-repeat me-1"></i>Re-open &amp; Revise</button></form>
+      <button class="btn btn-outline-primary" type="submit"><i class="bi bi-arrow-repeat me-1"></i>بازگشایی و بازبینی</button></form>
   </div>
 </div>
 <?php endif; ?>
 
 <?php if ($p['status'] === 'approved' && $isPro): ?>
 <div class="card mb-3 border-success">
-  <div class="card-header bg-success-subtle text-success-emphasis"><i class="bi bi-check2-circle me-2"></i>Finalize Order</div>
+  <div class="card-header bg-success-subtle text-success-emphasis"><i class="bi bi-check2-circle me-2"></i>نهایی کردن سفارش</div>
   <div class="card-body">
     <form method="post" class="row g-2">
       <input type="hidden" name="action" value="finalize">
       <div class="col-md-4">
-        <label class="form-label">From Quotation</label>
+        <label class="form-label">از قیمت</label>
         <select name="quote_path" class="form-select" id="quoteSelect">
-          <option value="">-- select a quotation --</option>
+          <option value="">-- انتخاب قیمت --</option>
           <?php foreach ($quotations as $qt): ?>
           <option value="<?php echo $qt['supplier_id']; ?>|<?php echo money0($qt['price']); ?>"><?php echo h($qt['supplier']); ?> @ <?php echo money0($qt['price']); ?></option>
           <?php endforeach; ?>
         </select>
       </div>
-      <div class="col-md-3"><label class="form-label">Or Supplier</label>
+      <div class="col-md-3"><label class="form-label">یا تأمین‌کننده</label>
         <select name="supplier_id" class="form-select" id="supplierSelect">
-          <option value="0">-- supplier --</option>
+          <option value="0">-- تأمین‌کننده --</option>
           <?php foreach ($suppliers as $s): ?>
           <option value="<?php echo $s['id']; ?>"><?php echo h($s['name']); ?></option>
           <?php endforeach; ?>
         </select></div>
-      <div class="col-md-2"><label class="form-label">Unit Price (PKR)</label>
+      <div class="col-md-2"><label class="form-label">قیمت واحد (PKR)</label>
         <input type="number" name="unit_price" class="form-control" min="0.01" step="any" required></div>
-      <div class="col-md-2"><label class="form-label">Date</label>
+      <div class="col-md-2"><label class="form-label">تاریخ</label>
         <input type="date" name="purchase_date" class="form-control" required value="<?php echo today(); ?>"></div>
-      <div class="col-md-1 pt-4"><button class="btn btn-success w-100" type="submit">Order</button></div>
+      <div class="col-md-1 pt-4"><button class="btn btn-success w-100" type="submit">سفارش</button></div>
     </form>
   </div>
 </div>
 <?php endif; ?>
 <?php if (count($committee) > 0): ?>
 <div class="card mb-3">
-  <div class="card-header"><i class="bi bi-people me-2"></i>Committee Approvals</div>
+  <div class="card-header"><i class="bi bi-people me-2"></i>تصویب‌های کمیته</div>
   <div class="table-responsive">
     <table class="table table-sm align-middle mb-0">
-      <thead><tr><th>Date</th><th>Member</th><th>Role</th><th>Decision</th><th>Comment</th></tr></thead>
+      <thead><tr><th>تاریخ</th><th>عضو</th><th>نقش</th><th>تصمیم</th><th>نظر</th></tr></thead>
       <tbody>
       <?php foreach ($committee as $a): ?>
         <tr><td class="text-nowrap small text-muted"><?php echo h($a['approved_at']); ?></td>
             <td><?php echo h($a['member_name']); ?></td>
             <td class="text-muted small"><?php echo h($a['member_role'] ?? '—'); ?></td>
-            <td><?php echo $a['decision'] === 'approved' ? '<span class="badge text-bg-success">Approved</span>' : '<span class="badge text-bg-danger">Rejected</span>'; ?></td>
+            <td><?php echo $a['decision'] === 'approved' ? '<span class="badge text-bg-success">تصویب شد</span>' : '<span class="badge text-bg-danger">رد شد</span>'; ?></td>
             <td class="text-muted small"><?php echo h($a['comment'] ?? '—'); ?></td></tr>
       <?php endforeach; ?>
       </tbody>
@@ -270,16 +270,16 @@ require_once __DIR__ . '/../includes/header.php';
 
 <?php if (count($gate) > 0): ?>
 <div class="card mb-3">
-  <div class="card-header"><i class="bi bi-shield-check me-2"></i>Gate Receipt Checklist</div>
+  <div class="card-header"><i class="bi bi-shield-check me-2"></i>چک‌لیست رسید گیت</div>
   <div class="table-responsive">
     <table class="table table-sm align-middle mb-0">
-      <thead><tr><th>Date</th><th>Received By</th><th>Qty Received</th><th>Condition</th><th>Remarks</th></tr></thead>
+      <thead><tr><th>تاریخ</th><th>دریافت‌کننده</th><th>تعداد دریافت شده</th><th>وضعیت</th><th>یادداشت</th></tr></thead>
       <tbody>
       <?php foreach ($gate as $g): ?>
         <tr><td class="text-nowrap small text-muted"><?php echo h($g['check_date']); ?></td>
             <td>#<?php echo (int)$g['received_by']; ?></td>
             <td><?php echo xnum($g['quantity_received']); ?></td>
-            <td><?php echo $g['condition_ok'] ? '<span class="badge text-bg-success">OK</span>' : '<span class="badge text-bg-danger">Damaged / Short</span>'; ?></td>
+            <td><?php echo $g['condition_ok'] ? '<span class="badge text-bg-success">سالم</span>' : '<span class="badge text-bg-danger">آسیب‌دیده / کم</span>'; ?></td>
             <td class="text-muted small"><?php echo h($g['remarks'] ?? '—'); ?></td></tr>
       <?php endforeach; ?>
       </tbody>
@@ -290,15 +290,15 @@ require_once __DIR__ . '/../includes/header.php';
 
 <?php if (count($consumptions) > 0): ?>
 <div class="card mb-3">
-  <div class="card-header"><i class="bi bi-box-arrow-up me-2"></i>Deliveries / Usage</div>
+  <div class="card-header"><i class="bi bi-box-arrow-up me-2"></i>تحویل‌ها / مصرف</div>
   <div class="table-responsive">
     <table class="table table-sm align-middle mb-0">
-      <thead><tr><th>Date</th><th>Department</th><th>Item</th><th>Qty</th><th>Source</th></tr></thead>
+      <thead><tr><th>تاریخ</th><th>اداره</th><th>کالا</th><th>تعداد</th><th>منبع</th></tr></thead>
       <tbody>
       <?php foreach ($consumptions as $c): ?>
         <tr><td class="text-nowrap"><?php echo h($c['delivery_date']); ?></td>
             <td><?php echo h($c['dept']); ?></td><td><?php echo h($c['item_name']); ?></td>
-            <td><?php echo xnum($c['quantity']); ?> <?php echo h($c['unit']); ?></td>
+            <td><?php echo xnum($c['quantity']); ?> <?php echo h(unit_label($c['unit'])); ?></td>
             <td><?php echo badge($c['source']); ?></td></tr>
       <?php endforeach; ?>
       </tbody>
@@ -307,5 +307,5 @@ require_once __DIR__ . '/../includes/header.php';
 </div>
 <?php endif; ?>
 
-<a class="btn btn-outline-secondary" href="javascript:history.back()"><i class="bi bi-arrow-left me-1"></i>Back</a>
+<a class="btn btn-outline-secondary" href="javascript:history.back()"><i class="bi bi-arrow-right me-1"></i>بازگشت</a>
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

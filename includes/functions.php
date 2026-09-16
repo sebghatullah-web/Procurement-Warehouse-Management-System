@@ -113,34 +113,48 @@ function today()
     return date('Y-m-d');
 }
 
+/**
+ * Extract the leading numeric value from a free-text quantity string.
+ * e.g. "3", "5 کیلوگرام", "۳ متر", "10، نیم بیل" -> 3 / 5 / 3 / 10.
+ * Returns 0.0 when no number can be found.
+ */
+function qty_num($s)
+{
+    $s = str_replace([',', '٫', '،'], '.', (string)$s);
+    if (preg_match('/-?[0-9]+(?:\.[0-9]+)?/', $s, $m)) {
+        return (float)$m[0];
+    }
+    return 0.0;
+}
+
 /* ---------------- Status helpers ---------------- */
 function _req_statuses()
 {
     return [
-        'pending'            => 'Pending Review',
-        'closed'             => 'Closed (Unnecessary)',
-        'warehouse_check'    => 'Warehouse Check',
-        'purchase_required'  => 'Purchase Required',
-        'quotation_pending'  => 'Collecting Quotations',
-        'committee_pending'  => 'Awaiting Committee',
-        'approved'           => 'Approved',
-        'purchased'          => 'Purchased / Ordered',
-        'received'           => 'Received at Gate',
-        'completed'          => 'Completed',
+        'pending'            => 'در انتظار بررسی',
+        'closed'             => 'بسته شده (غیرضروری)',
+        'warehouse_check'    => 'بررسی انبار',
+        'purchase_required'  => 'نیاز به خرید',
+        'quotation_pending'  => 'در حال جمع‌آوری قیمت‌ها',
+        'committee_pending'  => 'در انتظار کمیته',
+        'approved'           => 'تصویب شده',
+        'purchased'          => 'خریداری / سفارش داده شده',
+        'received'           => 'دریافت شده در گیت',
+        'completed'          => 'کامل شده',
     ];
 }
 
 function _pur_statuses()
 {
     return [
-        'draft'             => 'Draft',
-        'quotation'         => 'Collecting Quotations',
-        'committee_pending' => 'Awaiting Committee',
-        'approved'          => 'Approved',
-        'ordered'           => 'Ordered / Purchased',
-        'received'          => 'Received at Gate',
-        'completed'         => 'Completed',
-        'rejected'          => 'Rejected',
+        'draft'             => 'پیش‌نویس',
+        'quotation'         => 'جمع‌آوری قیمت‌ها',
+        'committee_pending' => 'در انتظار کمیته',
+        'approved'          => 'تصویب شده',
+        'ordered'           => 'سفارش داده شده',
+        'received'          => 'دریافت شده در گیت',
+        'completed'         => 'کامل شده',
+        'rejected'          => 'رد شده',
     ];
 }
 
@@ -184,10 +198,10 @@ function badge($s)
 function role_label($r)
 {
     $map = [
-        'employee' => 'Employee', 'procurement_manager' => 'Procurement Manager',
-        'warehouse_manager' => 'Warehouse Manager', 'gate_security' => 'Gate Security',
-        'committee' => 'Committee Member', 'general_manager' => 'General Manager',
-        'admin' => 'Administrator',
+        'employee' => 'کارمند', 'procurement_manager' => 'مدیر خرید',
+        'warehouse_manager' => 'مدیر انبار', 'gate_security' => 'امنیت گیت',
+        'committee' => 'عضو کمیته', 'general_manager' => 'مدیر عمومی',
+        'admin' => 'مدیر سیستم',
     ];
     return $map[$r] ?? $r;
 }
@@ -195,14 +209,24 @@ function role_label($r)
 function roles()
 {
     return [
-        'employee' => 'Employee',
-        'procurement_manager' => 'Procurement Manager',
-        'warehouse_manager' => 'Warehouse Manager',
-        'gate_security' => 'Gate Security',
-        'committee' => 'Committee Member',
-        'general_manager' => 'General Manager',
-        'admin' => 'Administrator',
+        'employee' => 'کارمند',
+        'procurement_manager' => 'مدیر خرید',
+        'warehouse_manager' => 'مدیر انبار',
+        'gate_security' => 'امنیت گیت',
+        'committee' => 'عضو کمیته',
+        'general_manager' => 'مدیر عمومی',
+        'admin' => 'مدیر سیستم',
     ];
+}
+
+function unit_label($u)
+{
+    $map = [
+        'pcs' => 'عدد', 'bag' => 'کیسه', 'ton' => 'تن', 'kg' => 'کیلوگرم',
+        'ream' => 'دسته', 'roll' => 'رول', 'liter' => 'لیتر', 'set' => 'ست',
+        'pair' => 'جفت', 'box' => 'جعبه', 'coil' => 'کلاف', 'meter' => 'متر',
+    ];
+    return $map[$u] ?? $u;
 }
 
 function _ucwords($s)

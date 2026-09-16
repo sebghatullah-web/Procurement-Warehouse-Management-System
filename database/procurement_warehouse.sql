@@ -136,11 +136,12 @@ CREATE TABLE `procurement_requests` (
   `department_id`  INT UNSIGNED NOT NULL,
   `category_id`    INT UNSIGNED NULL,
   `item_name`      VARCHAR(150) NOT NULL,
-  `quantity`       DECIMAL(12,2) NOT NULL,
+  `quantity`       VARCHAR(50)  NOT NULL COMMENT 'free text amount (supports kg, liter, متر, ...)',
   `unit`           VARCHAR(20)  NOT NULL DEFAULT 'pcs',
   `urgency`        ENUM('normal','urgent') NOT NULL DEFAULT 'normal',
   `direct_delivery` TINYINT(1)  NOT NULL DEFAULT 0,
   `reason`         TEXT         NULL,
+  `details`        TEXT         NULL COMMENT 'detailed item specifications',
   `status`         ENUM('pending','closed','warehouse_check','purchase_required',
                         'quotation_pending','committee_pending','approved',
                         'purchased','received','completed')
@@ -151,6 +152,7 @@ CREATE TABLE `procurement_requests` (
   `reviewed_at`    DATETIME     NULL,
   `warehouse_note` TEXT         NULL,
   `request_date`   DATE         NOT NULL,
+  `needed_date`    DATE         NULL COMMENT 'date the item must arrive by',
   `created_at`     TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at`     TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
                              ON UPDATE CURRENT_TIMESTAMP,
@@ -301,61 +303,61 @@ SET FOREIGN_KEY_CHECKS = 1;
 --    'admin123' : $2y$10$N18OsByDxvB0joRCtKOJvO25.V.xwlEYrclzG9NTDyjJFUf61V6z6
 -- ---------------------------------------------------------------------
 INSERT INTO `departments` (`id`,`name`,`description`) VALUES
-(1,'Construction','Building and site works'),
-(2,'Administration','Office and admin support'),
-(3,'Finance','Accounts and payments'),
-(4,'Human Resources','Staff management'),
-(5,'Logistics & Warehouse','Material handling and storage'),
-(6,'Maintenance','Plant and site maintenance'),
-(7,'Workshop','Fabrication and repairs'),
-(8,'Kitchen','Canteen and mess')
+(1,'ساخت و ساز','کارهای ساختمانی و سایت'),
+(2,'اداری','پشتیبانی دفتر و اداری'),
+(3,'مالی','حسابداری و پرداخت‌ها'),
+(4,'منابع بشری','مدیریت کارمندان'),
+(5,'لجستیک و انبار','جابجایی و نگهداری مواد'),
+(6,'نگهداری و تعمیرات','نگهداری ماشین‌آلات و سایت'),
+(7,'کارگاه','تولید و تعمیرات'),
+(8,'آشپزخانه','غذا و سلف‌سرویس')
 ON DUPLICATE KEY UPDATE `name`=`name`;
 
 INSERT INTO `categories` (`id`,`name`,`description`) VALUES
-(1,'Machinery','Heavy and light machinery'),
-(2,'Containers','Storage containers and frames'),
-(3,'Office Supplies','General office materials'),
-(4,'Furniture','Chairs, tables, desks'),
-(5,'Stationery','Paper, pens, printing'),
-(6,'Kitchen Tools','Mess and canteen utensils'),
-(7,'Workshop Tools','Hand and power tools'),
-(8,'Construction Materials','Cement, steel, aggregates'),
-(9,'Electrical','Wiring, fittings, lighting'),
-(10,'Safety Equipment','PPE and safety gear')
+(1,'ماشین‌آلات','ماشین‌آلات سنگین و سبک'),
+(2,'کانتینرها','کانتینرهای ذخیره‌سازی و قاب‌ها'),
+(3,'ملزومات اداری','مواد عمومی اداری'),
+(4,'مبلمان','صندلی، میز، میزکار'),
+(5,'لوازم التحریر','کاغذ، قلم، چاپ'),
+(6,'لوازم آشپزخانه','ظروف آشپزخانه و سلف'),
+(7,'ابزار کارگاه','ابزار دستی و برقی'),
+(8,'مصالح ساختمانی','سیمان، فولاد، سنگ‌دانه'),
+(9,'برقی','سیم‌کشی، اتصالات، روشنایی'),
+(10,'تجهیزات ایمنی','وسایل حفاظت فردی و ایمنی')
 ON DUPLICATE KEY UPDATE `name`=`name`;
 
 INSERT INTO `users`
 (`id`,`username`,`password`,`name`,`role`,`department_id`,`email`,`phone`,`status`) VALUES
-(1,'admin','$2y$10$N18OsByDxvB0joRCtKOJvO25.V.xwlEYrclzG9NTDyjJFUf61V6z6','Administrator','admin',2,'admin@khawar.pk','0300-0000001',1),
-(2,'procurement','$2y$10$pGRKXtjZnTUeCOCnPWwEWeOAx7.P/PToiwCM7MlcpbvAGKFlQ9swu','Procurement Manager','procurement_manager',2,'procurement@khawar.pk','0300-0000002',1),
-(3,'warehouse','$2y$10$pGRKXtjZnTUeCOCnPWwEWeOAx7.P/PToiwCM7MlcpbvAGKFlQ9swu','Warehouse Manager','warehouse_manager',5,'warehouse@khawar.pk','0300-0000003',1),
-(4,'gate','$2y$10$pGRKXtjZnTUeCOCnPWwEWeOAx7.P/PToiwCM7MlcpbvAGKFlQ9swu','Gate Security','gate_security',5,'gate@khawar.pk','0300-0000004',1),
-(5,'committee','$2y$10$pGRKXtjZnTUeCOCnPWwEWeOAx7.P/PToiwCM7MlcpbvAGKFlQ9swu','Committee Member','committee',3,'committee@khawar.pk','0300-0000005',1),
-(6,'gm','$2y$10$pGRKXtjZnTUeCOCnPWwEWeOAx7.P/PToiwCM7MlcpbvAGKFlQ9swu','General Manager','general_manager',1,'gm@khawar.pk','0300-0000006',1),
-(7,'employee','$2y$10$pGRKXtjZnTUeCOCnPWwEWeOAx7.P/PToiwCM7MlcpbvAGKFlQ9swu','Ali Khan','employee',1,'ali.khan@khawar.pk','0300-0000007',1)
+(1,'admin','$2y$10$N18OsByDxvB0joRCtKOJvO25.V.xwlEYrclzG9NTDyjJFUf61V6z6','مدیر سیستم','admin',2,'admin@khawar.pk','0300-0000001',1),
+(2,'procurement','$2y$10$pGRKXtjZnTUeCOCnPWwEWeOAx7.P/PToiwCM7MlcpbvAGKFlQ9swu','مدیر تدارکات','procurement_manager',2,'procurement@khawar.pk','0300-0000002',1),
+(3,'warehouse','$2y$10$pGRKXtjZnTUeCOCnPWwEWeOAx7.P/PToiwCM7MlcpbvAGKFlQ9swu','مدیر انبار','warehouse_manager',5,'warehouse@khawar.pk','0300-0000003',1),
+(4,'gate','$2y$10$pGRKXtjZnTUeCOCnPWwEWeOAx7.P/PToiwCM7MlcpbvAGKFlQ9swu','امنیت گیت','gate_security',5,'gate@khawar.pk','0300-0000004',1),
+(5,'committee','$2y$10$pGRKXtjZnTUeCOCnPWwEWeOAx7.P/PToiwCM7MlcpbvAGKFlQ9swu','عضو کمیته','committee',3,'committee@khawar.pk','0300-0000005',1),
+(6,'gm','$2y$10$pGRKXtjZnTUeCOCnPWwEWeOAx7.P/PToiwCM7MlcpbvAGKFlQ9swu','مدیر عمومی','general_manager',1,'gm@khawar.pk','0300-0000006',1),
+(7,'employee','$2y$10$pGRKXtjZnTUeCOCnPWwEWeOAx7.P/PToiwCM7MlcpbvAGKFlQ9swu','علی خان','employee',1,'ali.khan@khawar.pk','0300-0000007',1)
 ON DUPLICATE KEY UPDATE `name`=`name`;
 
 INSERT INTO `suppliers`
 (`id`,`name`,`contact_person`,`phone`,`email`,`address`,`notes`) VALUES
-(1,'Karachi Machinery & Tools','Mr. Imran','0300-1234567','imran@kmachinery.pk','Karachi','Machinery, workshop tools'),
-(2,'Al-Fatah Stationers','Mr. Sajid','0321-7654321','sajid@fatah.pk','Lahore','Office supplies, stationery'),
-(3,'Steel & Pipes Traders','Mr. Bilal','0333-1112233','bilal@steelpipes.pk','Faisalabad','Steel, containers, construction'),
-(4,'Furniture Hub','Ms. Ayesha','0345-4455667','ayesha@furniturehub.pk','Islamabad','Office and site furniture'),
-(5,'Electrical Mart','Mr. Kamran','0311-9988776','kamran@elmart.pk','Karachi','Electrical items'),
-(6,'Bulk Construction Supplies','Mr. Rashid','0301-5566778','rashid@bulkcs.pk','Hyderabad','Cement, sand, aggregate, bulk items')
+(1,'ماشین‌آلات و ابزار کراچی','آقای عمران','0300-1234567','imran@kmachinery.pk','کراچی','ماشین‌آلات، ابزار کارگاه'),
+(2,'لوازم التحریر الفتح','آقای ساجد','0321-7654321','sajid@fatah.pk','لاهور','ملزومات اداری، لوازم التحریر'),
+(3,'بازرگانی فولاد و لوله','آقای بلال','0333-1112233','bilal@steelpipes.pk','فیصل‌آباد','فولاد، کانتینر، ساخت‌وساز'),
+(4,'مرکز مبلمان','خانم عایشه','0345-4455667','ayesha@furniturehub.pk','اسلام‌آباد','مبلمان اداری و سایت'),
+(5,'فروشگاه برقی','آقای کامران','0311-9988776','kamran@elmart.pk','کراچی','اقلام برقی'),
+(6,'تأمین مصالح عمده ساختمانی','آقای رشید','0301-5566778','rashid@bulkcs.pk','حیدرآباد','سیمان، شن، سنگ‌دانه، اقلام عمده')
 ON DUPLICATE KEY UPDATE `name`=`name`;
 
 INSERT INTO `warehouse_items`
 (`id`,`name`,`category_id`,`quantity`,`unit`,`location`,`min_stock`,`notes`) VALUES
-(1,'Cement (Lucky 50kg bag)',8,250.00,'bag','Shed A / Rack 1',50.00,'stock after issues'),
-(2,'Steel bars 12mm',8,12.50,'ton','Shed B',2.00,NULL),
-(3,'A4 Paper Ream',5,180.00,'ream','Store Room 1',20.00,NULL),
-(4,'Office Chair (Executive)',4,15.00,'pcs','Store Room 2',2.00,NULL),
-(5,'Safety Helmet',10,45.00,'pcs','Safety Rack',10.00,NULL),
-(6,'Diesel 5000W Generator',1,2.00,'pcs','Machinery Bay',1.00,NULL),
-(7,'Workshop Drill Machine',7,6.00,'pcs','Tool Cage',1.00,NULL),
-(8,'Steel Container 20ft',2,3.00,'pcs','Outdoor Yard',1.00,NULL),
-(9,'Plastic Bucket',6,40.00,'pcs','Kitchen Shelf',10.00,NULL)
+(1,'سیمان (کیسه ۵۰ کیلویی لکی)',8,250.00,'bag','سوله A / قفسه ۱',50.00,'موجودی پس از صدور'),
+(2,'میلگرد ۱۲ میلی‌متری',8,12.50,'ton','سوله B',2.00,NULL),
+(3,'بسته کاغذ A4',5,180.00,'ream','اتاق انبار ۱',20.00,NULL),
+(4,'صندلی اداری (مدیریتی)',4,15.00,'pcs','اتاق انبار ۲',2.00,NULL),
+(5,'کلاه ایمنی',10,45.00,'pcs','قفسه ایمنی',10.00,NULL),
+(6,'ژنراتور دیزلی ۵۰۰۰ وات',1,2.00,'pcs','محوطه ماشین‌آلات',1.00,NULL),
+(7,'دریل کارگاه',7,6.00,'pcs','قفس ابزار',1.00,NULL),
+(8,'کانتینر فولادی ۲۰ فوت',2,3.00,'pcs','حیاط بیرونی',1.00,NULL),
+(9,'سطل پلاستیکی',6,40.00,'pcs','قفسه آشپزخانه',10.00,NULL)
 ON DUPLICATE KEY UPDATE `name`=`name`;
 -- =====================================================================
 --  SAMPLE WORKFLOW DATA (demo records - delete freely)
@@ -364,97 +366,109 @@ INSERT INTO `procurement_requests`
 (`id`,`request_no`,`department_id`,`category_id`,`item_name`,`quantity`,`unit`,
  `urgency`,`direct_delivery`,`reason`,`status`,`requested_by`,`reviewed_by`,
  `review_note`,`reviewed_at`,`warehouse_note`,`request_date`) VALUES
-(1,'REQ-2026-0001',1,8,'Cement (Lucky 50kg bag)',100.00,'bag','urgent',0,
- 'Site foundation work','completed',7,2,'Approved - issue from warehouse',
- '2026-01-05 09:10:00','Issued from Shed A','2026-01-05'),
-(2,'REQ-2026-0002',5,2,'Steel Container 20ft',1.00,'pcs','urgent',1,
- 'Storage expansion','completed',7,2,'Approved - urgent buy',
- '2026-02-08 11:25:00','Direct delivery to Logistics','2026-02-08'),
-(3,'REQ-2026-0003',2,5,'A4 Paper Ream',30.00,'ream','normal',0,
- 'Quarterly stationery','completed',7,2,'Approved - issue from warehouse',
- '2026-03-01 10:05:00','Issued from Store Room 1','2026-03-01'),
-(4,'REQ-2026-0004',4,10,'Safety Helmet',25.00,'pcs','normal',1,
- 'PPE for new staff','completed',6,2,'Approved - purchase with quotations',
+(1,'REQ-2026-0001',1,8,'سیمان (کیسه ۵۰ کیلویی لکی)',100.00,'bag','urgent',0,
+ 'کار فونداسیون سایت','completed',7,2,'تأیید شد - صدور از انبار',
+ '2026-01-05 09:10:00','صادر شده از سوله A','2026-01-05'),
+(2,'REQ-2026-0002',5,2,'کانتینر فولادی ۲۰ فوت',1.00,'pcs','urgent',1,
+ 'توسعه فضای انبار','completed',7,2,'تأیید شد - خرید فوری',
+ '2026-02-08 11:25:00','تحویل مستقیم به لجستیک','2026-02-08'),
+(3,'REQ-2026-0003',2,5,'بسته کاغذ A4',30.00,'ream','normal',0,
+ 'لوازم التحریر فصلی','completed',7,2,'تأیید شد - صدور از انبار',
+ '2026-03-01 10:05:00','صادر شده از اتاق انبار ۱','2026-03-01'),
+(4,'REQ-2026-0004',4,10,'کلاه ایمنی',25.00,'pcs','normal',1,
+ 'تجهیزات ایمنی برای کارمندان جدید','completed',6,2,'تأیید شد - خرید با قیمت‌گیری',
  '2026-04-03 12:20:00',NULL,'2026-04-02'),
-(5,'REQ-2026-0005',7,7,'Workshop Drill Machine',2.00,'pcs','urgent',1,
- 'Drill motor burnt','completed',7,2,'Approved - urgent buy',
- '2026-05-09 16:40:00','Direct delivery to Workshop','2026-05-09'),
-(6,'REQ-2026-0006',3,4,'Office Chair (Executive)',4.00,'pcs','normal',0,
- 'Finance seating','received',7,2,'Approved - purchase with quotations',
+(5,'REQ-2026-0005',7,7,'دریل کارگاه',2.00,'pcs','urgent',1,
+ 'موتور دریل سوخته','completed',7,2,'تأیید شد - خرید فوری',
+ '2026-05-09 16:40:00','تحویل مستقیم به کارگاه','2026-05-09'),
+(6,'REQ-2026-0006',3,4,'صندلی اداری (مدیریتی)',4.00,'pcs','normal',0,
+ 'صندلی واحد مالی','received',7,2,'تأیید شد - خرید با قیمت‌گیری',
  '2026-06-13 09:30:00',NULL,'2026-06-12'),
-(7,'REQ-2026-0007',6,9,'Copper Wire 50m Coil',10.00,'pcs','normal',0,
- 'Electrical maintenance','committee_pending',7,2,'Approved - waiting committee',
+(7,'REQ-2026-0007',6,9,'کویل سیم مسی ۵۰ متری',10.00,'pcs','normal',0,
+ 'نگهداری برق','committee_pending',7,2,'تأیید شد - در انتظار کمیته',
  '2026-07-06 10:00:00',NULL,'2026-07-05'),
-(8,'REQ-2026-0008',8,6,'Plastic Bucket',20.00,'pcs','normal',0,
- 'Kitchen replacement','closed',7,2,'Declined - use existing stock',
+(8,'REQ-2026-0008',8,6,'سطل پلاستیکی',20.00,'pcs','normal',0,
+ 'تعویض لوازم آشپزخانه','closed',7,2,'رد شد - از موجودی استفاده شود',
  '2026-08-02 14:15:00',NULL,'2026-08-01'),
-(9,'REQ-2026-0009',2,3,'Office Printer Ink Cartridge',6.00,'pcs','urgent',1,
- 'Printer out of ink','purchase_required',7,2,'Approved - not in warehouse',
- '2026-08-21 09:00:00','Not stocked (checked 2026-08-21)','2026-08-20'),
-(10,'REQ-2026-0010',1,8,'Steel bars 12mm',3.00,'ton','normal',1,
- 'Rebar for slab casting','pending',7,NULL,NULL,NULL,NULL,'2026-09-01'),
-(11,'REQ-2026-0011',1,1,'Excavator Bucket Teeth',8.00,'pcs','urgent',1,
- 'Loader teeth worn','warehouse_check',7,2,'Approved - check warehouse',
+(9,'REQ-2026-0009',2,3,'کارتریج جوهر چاپگر اداری',6.00,'pcs','urgent',1,
+ 'جوهر چاپگر تمام شده','purchase_required',7,2,'تأیید شد - در انبار موجود نیست',
+ '2026-08-21 09:00:00','موجود نیست (بازبینی ۲۰۲۶-۰۸-۲۱)','2026-08-20'),
+(10,'REQ-2026-0010',1,8,'میلگرد ۱۲ میلی‌متری',3.00,'ton','normal',1,
+ 'میلگرد برای بتن‌ریزی دال','pending',7,NULL,NULL,NULL,NULL,'2026-09-01'),
+(11,'REQ-2026-0011',1,1,'تیغه‌های باکت بیل مکانیکی',8.00,'pcs','urgent',1,
+ 'ساییدگی تیغه‌های لودر','warehouse_check',7,2,'تأیید شد - بررسی انبار',
  '2026-09-10 09:15:00',NULL,'2026-09-10'),
-(12,'REQ-2025-0001',1,8,'Cement (Lucky 50kg bag)',200.00,'bag','urgent',0,
- 'Tower block foundation','completed',7,2,'Approved - issue from warehouse',
- '2025-11-03 10:20:00','Issued from Shed A','2025-11-03'),
-(13,'REQ-2025-0002',5,2,'Steel Container 20ft',1.00,'pcs','urgent',1,
- 'Storage expansion','completed',7,2,'Approved - urgent buy',
- '2025-12-12 13:00:00','Direct delivery','2025-12-14')
+(12,'REQ-2025-0001',1,8,'سیمان (کیسه ۵۰ کیلویی لکی)',200.00,'bag','urgent',0,
+ 'فونداسیون بلوک برج','completed',7,2,'تأیید شد - صدور از انبار',
+ '2025-11-03 10:20:00','صادر شده از سوله A','2025-11-03'),
+(13,'REQ-2025-0002',5,2,'کانتینر فولادی ۲۰ فوت',1.00,'pcs','urgent',1,
+ 'توسعه فضای انبار','completed',7,2,'تأیید شد - خرید فوری',
+ '2025-12-12 13:00:00','تحویل مستقیم','2025-12-14')
 ON DUPLICATE KEY UPDATE `item_name`=`item_name`;
+
+-- Sample values for the new request fields (details + needed_date)
+UPDATE `procurement_requests` SET
+  `needed_date` = DATE_ADD(`request_date`, INTERVAL 7 DAY),
+  `details` = CASE `id`
+    WHEN 1  THEN 'سیمان پورتی درجه یک، کیسه ۵۰ کیلویی - لکی'
+    WHEN 2  THEN 'کانتینر ۲۰ فوت استاندارد دریایی، گمرک‌کشیده'
+    WHEN 5  THEN 'دریل چکشی برند بوش، ۱۱۰۰ وات'
+    WHEN 6  THEN 'صندلی مدیریتی با گارانتی، چرم مصنوعی'
+    WHEN 10 THEN 'کمپیوتر دل: رم ۳۲ گیگابایت، حافظه ۱ ترابایت، کور i9 نسل ۱۰، گرافیک ۸ گیگابایت'
+    ELSE NULL
+  END;
 
 INSERT INTO `consumptions`
 (`id`,`item_id`,`request_id`,`department_id`,`item_name`,`category_id`,`quantity`,
  `unit`,`source`,`delivery_date`,`delivered_by`,`notes`) VALUES
-(1,1,1,1,'Cement (Lucky 50kg bag)',8,100.00,'bag','warehouse','2026-01-06',3,'Issued for foundation work'),
-(2,NULL,2,5,'Steel Container 20ft',2,1.00,'pcs','direct','2026-02-20',3,'Direct delivery on purchase'),
-(3,3,3,2,'A4 Paper Ream',5,30.00,'ream','warehouse','2026-03-02',3,'Quarterly issue'),
-(4,NULL,4,4,'Safety Helmet',10,25.00,'pcs','direct','2026-04-18',3,'Direct delivery on purchase'),
-(5,NULL,5,7,'Workshop Drill Machine',7,2.00,'pcs','direct','2026-05-21',3,'Direct delivery on purchase'),
-(6,1,12,1,'Cement (Lucky 50kg bag)',8,200.00,'bag','warehouse','2025-11-04',3,'Tower block foundation'),
-(7,NULL,13,5,'Steel Container 20ft',2,1.00,'pcs','direct','2025-12-20',3,'Direct delivery on purchase')
+(1,1,1,1,'سیمان (کیسه ۵۰ کیلویی لکی)',8,100.00,'bag','warehouse','2026-01-06',3,'صادر شده برای کار فونداسیون'),
+(2,NULL,2,5,'کانتینر فولادی ۲۰ فوت',2,1.00,'pcs','direct','2026-02-20',3,'تحویل مستقیم هنگام خرید'),
+(3,3,3,2,'بسته کاغذ A4',5,30.00,'ream','warehouse','2026-03-02',3,'صدور فصلی'),
+(4,NULL,4,4,'کلاه ایمنی',10,25.00,'pcs','direct','2026-04-18',3,'تحویل مستقیم هنگام خرید'),
+(5,NULL,5,7,'دریل کارگاه',7,2.00,'pcs','direct','2026-05-21',3,'تحویل مستقیم هنگام خرید'),
+(6,1,12,1,'سیمان (کیسه ۵۰ کیلویی لکی)',8,200.00,'bag','warehouse','2025-11-04',3,'فونداسیون بلوک برج'),
+(7,NULL,13,5,'کانتینر فولادی ۲۰ فوت',2,1.00,'pcs','direct','2025-12-20',3,'تحویل مستقیم هنگام خرید')
 ON DUPLICATE KEY UPDATE `item_name`=`item_name`;
 INSERT INTO `purchases`
 (`id`,`purchase_no`,`request_id`,`supplier_id`,`quantity`,`unit_price`,`total_cost`,
  `purchase_date`,`urgency`,`payment_status`,`status`,`approved_by`,`committee_approved`,
  `committee_note`,`announcement_note`) VALUES
-(1,'PUR-2026-0001',2,3,1.00,850000.00,850000.00,'2026-02-10','urgent','paid','completed',2,1,'Urgent - immediate approval',NULL),
-(2,'PUR-2026-0002',4,1,25.00,1500.00,37500.00,'2026-04-05','normal','paid','completed',2,1,'Lowest quotation',NULL),
-(3,'PUR-2026-0003',5,1,2.00,18500.00,37000.00,'2026-05-11','urgent','paid','completed',2,1,'Urgent - immediate approval',NULL),
-(4,'PUR-2026-0004',6,4,4.00,12000.00,48000.00,'2026-06-15','normal','paid','received',2,1,'Lowest quotation',NULL),
-(5,'PUR-2026-0005',7,5,10.00,3500.00,35000.00,'2026-07-10','normal','pending','committee_pending',2,0,'Awaiting committee',NULL),
-(6,'PUR-2025-0001',13,3,1.00,820000.00,820000.00,'2025-12-15','urgent','paid','completed',2,1,'Urgent - immediate approval',NULL)
+(1,'PUR-2026-0001',2,3,1.00,850000.00,850000.00,'2026-02-10','urgent','paid','completed',2,1,'فوری - تأیید فوری',NULL),
+(2,'PUR-2026-0002',4,1,25.00,1500.00,37500.00,'2026-04-05','normal','paid','completed',2,1,'کمترین قیمت پیشنهادی',NULL),
+(3,'PUR-2026-0003',5,1,2.00,18500.00,37000.00,'2026-05-11','urgent','paid','completed',2,1,'فوری - تأیید فوری',NULL),
+(4,'PUR-2026-0004',6,4,4.00,12000.00,48000.00,'2026-06-15','normal','paid','received',2,1,'کمترین قیمت پیشنهادی',NULL),
+(5,'PUR-2026-0005',7,5,10.00,3500.00,35000.00,'2026-07-10','normal','pending','committee_pending',2,0,'در انتظار کمیته',NULL),
+(6,'PUR-2025-0001',13,3,1.00,820000.00,820000.00,'2025-12-15','urgent','paid','completed',2,1,'فوری - تأیید فوری',NULL)
 ON DUPLICATE KEY UPDATE `purchase_no`=`purchase_no`;
 
 INSERT INTO `quotations` (`id`,`request_id`,`supplier_id`,`price`,`delivery_days`,`notes`) VALUES
-(1,4,1,1500.00,10,'Genuine construction grade'),
-(2,4,5,1650.00,7,'Fast delivery'),
-(3,4,4,1480.00,12,'Bulk discount'),
-(4,6,4,12000.00,15,'Brand new - 2yr warranty'),
+(1,4,1,1500.00,10,'درجه ساخت‌وساز اصلی'),
+(2,4,5,1650.00,7,'تحویل سریع'),
+(3,4,4,1480.00,12,'تخفیف عمده'),
+(4,6,4,12000.00,15,'نو - گارانتی ۲ سال'),
 (5,6,1,12500.00,20,NULL),
 (6,6,2,12150.00,25,NULL),
-(7,7,5,3500.00,5,'ISI marked'),
+(7,7,5,3500.00,5,'دارای نشان ISI'),
 (8,7,1,3800.00,10,NULL),
-(9,7,6,3600.00,8,'Site delivery')
+(9,7,6,3600.00,8,'تحویل در سایت')
 ON DUPLICATE KEY UPDATE `price`=`price`;
 
 INSERT INTO `committee_approvals`
 (`purchase_id`,`member_name`,`member_role`,`decision`,`comment`,`approved_at`) VALUES
-(2,'Faisal - Finance','finance','approved','Budget available','2026-04-06 10:00:00'),
-(2,'Rizwan - Management','management','approved','Lowest quote accepted','2026-04-06 11:30:00'),
-(2,'Procurement Manager','procurement','approved','Recommended lowest','2026-04-06 12:00:00'),
-(4,'Faisal - Finance','finance','approved','Within budget','2026-06-16 10:00:00'),
-(4,'Rizwan - Management','management','approved','OK','2026-06-16 11:00:00'),
-(4,'Procurement Manager','procurement','approved','Approved','2026-06-16 12:00:00');
+(2,'فیصل - مالی','finance','approved','بودجه موجود است','2026-04-06 10:00:00'),
+(2,'ریضوان - مدیریت','management','approved','کمترین قیمت پذیرفته شد','2026-04-06 11:30:00'),
+(2,'مدیر تدارکات','procurement','approved','توصیه به کمترین قیمت','2026-04-06 12:00:00'),
+(4,'فیصل - مالی','finance','approved','در چارچوب بودجه','2026-06-16 10:00:00'),
+(4,'ریضوان - مدیریت','management','approved','تأیید','2026-06-16 11:00:00'),
+(4,'مدیر تدارکات','procurement','approved','تصویب شد','2026-06-16 12:00:00');
 
 INSERT INTO `gate_checklists`
 (`purchase_id`,`received_by`,`quantity_received`,`condition_ok`,`remarks`,`check_date`) VALUES
-(1,4,1.00,1,'Matches purchase order','2026-02-18 10:00:00'),
-(2,4,25.00,1,'All helmets new in box','2026-04-16 09:30:00'),
-(3,4,2.00,1,'Both units tested','2026-05-20 15:00:00'),
-(4,4,4.00,1,'Boxes sealed','2026-06-25 11:00:00'),
-(6,4,1.00,1,'Container in good condition','2025-12-28 10:30:00');
+(1,4,1.00,1,'مطابق سفارش خرید','2026-02-18 10:00:00'),
+(2,4,25.00,1,'همه کلاه‌ها نو در جعبه','2026-04-16 09:30:00'),
+(3,4,2.00,1,'هر دو دستگاه تست شد','2026-05-20 15:00:00'),
+(4,4,4.00,1,'جعبه‌ها مهر و موم شده','2026-06-25 11:00:00'),
+(6,4,1.00,1,'کانتینر در وضعیت خوب','2025-12-28 10:30:00');
 
 -- database created & seeded successfully
 -- /end

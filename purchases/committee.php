@@ -4,7 +4,7 @@
  */
 require_once __DIR__ . '/../includes/auth.php';
 $user = require_role('procurement_manager', 'committee', 'admin');
-$page_title = 'Committee Approvals';
+$page_title = 'تصویب‌های کمیته';
 $base = BASE_URL;
 
 $rows = fetch_all("SELECT ca.*, p.purchase_no, p.request_id, r.item_name, r.department_id, d.name dept
@@ -17,10 +17,10 @@ $rows = fetch_all("SELECT ca.*, p.purchase_no, p.request_id, r.item_name, r.depa
 require_once __DIR__ . '/../includes/header.php';
 ?>
 <div class="card">
-  <div class="card-header"><i class="bi bi-people me-2"></i>Committee Decisions <span class="text-muted small">(<?php echo count($rows); ?>)</span></div>
+  <div class="card-header"><i class="bi bi-people me-2"></i>تصمیم‌های کمیته <span class="text-muted small">(<?php echo count($rows); ?>)</span></div>
   <div class="table-responsive">
     <table class="table table-hover align-middle mb-0">
-      <thead><tr><th>Date</th><th>PO No</th><th>Request</th><th>Department</th><th>Item</th><th>Member</th><th>Role</th><th>Decision</th><th>Comment</th></tr></thead>
+      <thead><tr><th>تاریخ</th><th>شماره سفارش</th><th>درخواست</th><th>اداره</th><th>کالا</th><th>عضو</th><th>نقش</th><th>تصمیم</th><th>نظر</th></tr></thead>
       <tbody>
       <?php foreach ($rows as $a): ?>
         <tr>
@@ -31,12 +31,12 @@ require_once __DIR__ . '/../includes/header.php';
           <td><?php echo h($a['item_name']); ?></td>
           <td><?php echo h($a['member_name']); ?></td>
           <td class="text-muted small"><?php echo h($a['member_role'] ?? '—'); ?></td>
-          <td><?php echo $a['decision'] === 'approved' ? '<span class="badge text-bg-success">Approved</span>' : '<span class="badge text-bg-danger">Rejected</span>'; ?></td>
+          <td><?php echo $a['decision'] === 'approved' ? '<span class="badge text-bg-success">تصویب شد</span>' : '<span class="badge text-bg-danger">رد شد</span>'; ?></td>
           <td class="text-muted small"><?php echo h($a['comment'] ?? '—'); ?></td>
         </tr>
       <?php endforeach; ?>
       <?php if (count($rows) === 0): ?>
-        <tr><td colspan="9" class="text-center text-muted py-4">No committee decisions recorded.</td></tr>
+        <tr><td colspan="9" class="text-center text-muted py-4">هیچ تصمیم کمیته‌ای ثبت نشده است.</td></tr>
       <?php endif; ?>
       </tbody>
     </table>

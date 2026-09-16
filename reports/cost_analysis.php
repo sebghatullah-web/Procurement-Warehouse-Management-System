@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../includes/auth.php';
 $user = require_role('general_manager', 'procurement_manager', 'warehouse_manager', 'admin');
-$page_title = 'Cost Analysis';
+$page_title = 'تحلیل هزینه‌ها';
 $base = BASE_URL;
 
 $frm = trim($_GET['from_date'] ?? '');
@@ -47,42 +47,42 @@ require_once __DIR__ . '/../includes/header.php';
 ?>
 <div class="filter-box rounded-2 p-3 mb-3">
   <form method="get" class="row g-2 align-items-end">
-    <div class="col-auto"><label class="form-label small text-muted">From</label>
+    <div class="col-auto"><label class="form-label small text-muted">از تاریخ</label>
       <input type="date" name="from_date" class="form-control form-control-sm" value="<?php echo h($frm); ?>"></div>
-    <div class="col-auto"><label class="form-label small text-muted">To</label>
+    <div class="col-auto"><label class="form-label small text-muted">تا تاریخ</label>
       <input type="date" name="to_date" class="form-control form-control-sm" value="<?php echo h($to); ?>"></div>
-    <div class="col-md-3"><label class="form-label small text-muted">Department</label>
+    <div class="col-md-3"><label class="form-label small text-muted">اداره</label>
       <select name="department_id" class="form-select form-select-sm" data-autosubmit>
-        <option value="0">All</option>
+        <option value="0">همه</option>
         <?php foreach ($depts as $d): ?>
         <option value="<?php echo $d['id']; ?>" <?php echo $dp===(int)$d['id']?'selected':''; ?>><?php echo h($d['name']); ?></option>
         <?php endforeach; ?>
       </select></div>
-    <div class="col-md-3"><label class="form-label small text-muted">Category</label>
+    <div class="col-md-3"><label class="form-label small text-muted">دسته‌بندی</label>
       <select name="category_id" class="form-select form-select-sm" data-autosubmit>
-        <option value="0">All</option>
+        <option value="0">همه</option>
         <?php foreach ($cats as $c): ?>
         <option value="<?php echo $c['id']; ?>" <?php echo $cat===(int)$c['id']?'selected':''; ?>><?php echo h($c['name']); ?></option>
         <?php endforeach; ?>
       </select></div>
-    <div class="col-auto pt-3"><button class="btn btn-primary btn-sm" type="submit">Filter</button></div>
-    <div class="col-auto pt-3"><a class="btn btn-outline-secondary btn-sm" href="<?php echo $base; ?>/reports/cost_analysis.php">Reset</a></div>
-    <div class="col-auto pt-3"><strong>Total: <?php echo money0($total); ?> PKR</strong></div>
+    <div class="col-auto pt-3"><button class="btn btn-primary btn-sm" type="submit">فیلتر</button></div>
+    <div class="col-auto pt-3"><a class="btn btn-outline-secondary btn-sm" href="<?php echo $base; ?>/reports/cost_analysis.php">بازنشانی</a></div>
+    <div class="col-auto pt-3"><strong>مجموع: <?php echo money0($total); ?> PKR</strong></div>
   </form>
 </div>
 <div class="row g-3 mb-3">
   <div class="col-lg-6">
     <div class="card h-100">
-      <div class="card-header">By Department</div>
+      <div class="card-header">به تفکیک اداره</div>
       <div class="table-responsive">
         <table class="table table-sm align-middle mb-0">
-          <thead><tr><th>Department</th><th>Spend (PKR)</th></tr></thead>
+          <thead><tr><th>اداره</th><th>هزینه (PKR)</th></tr></thead>
           <tbody>
           <?php foreach ($byDept as $dept => $spend): ?>
             <tr><td><?php echo h($dept); ?></td><td class="text-nowrap"><?php echo money0($spend); ?></td></tr>
           <?php endforeach; ?>
           <?php if (count($byDept) === 0): ?>
-            <tr><td colspan="2" class="text-center text-muted py-3">No data.</td></tr>
+            <tr><td colspan="2" class="text-center text-muted py-3">داده‌ای موجود نیست.</td></tr>
           <?php endif; ?>
           </tbody>
         </table>
@@ -91,17 +91,17 @@ require_once __DIR__ . '/../includes/header.php';
   </div>
   <div class="col-lg-6">
     <div class="card h-100">
-      <div class="card-header">By Category</div>
+      <div class="card-header">به تفکیک دسته‌بندی</div>
       <div class="table-responsive">
         <table class="table table-sm align-middle mb-0">
-          <thead><tr><th>Category</th><th>Spend (PKR)</th></tr></thead>
+          <thead><tr><th>دسته‌بندی</th><th>هزینه (PKR)</th></tr></thead>
           <tbody>
           <?php foreach ($byCat as $key => $spend): ?>
             <?php $parts = explode('|', $key, 2); $catName = $parts[1] ?? '—'; ?>
             <tr><td><?php echo h($catName); ?></td><td class="text-nowrap"><?php echo money0($spend); ?></td></tr>
           <?php endforeach; ?>
           <?php if (count($byCat) === 0): ?>
-            <tr><td colspan="2" class="text-center text-muted py-3">No data.</td></tr>
+            <tr><td colspan="2" class="text-center text-muted py-3">داده‌ای موجود نیست.</td></tr>
           <?php endif; ?>
           </tbody>
         </table>
@@ -112,12 +112,12 @@ require_once __DIR__ . '/../includes/header.php';
 
 <div class="card">
   <div class="card-header d-flex justify-content-between align-items-center">
-    <span><i class="bi bi-graph-up me-2"></i>Purchase Details</span>
-    <button class="btn btn-sm btn-outline-secondary" data-print><i class="bi bi-printer me-1"></i>Print</button>
+    <span><i class="bi bi-graph-up me-2"></i>جزئیات خرید</span>
+    <button class="btn btn-sm btn-outline-secondary" data-print><i class="bi bi-printer me-1"></i>چاپ</button>
   </div>
   <div class="table-responsive">
     <table class="table table-hover align-middle mb-0">
-      <thead><tr><th>PO No</th><th>Request</th><th>Department</th><th>Category</th><th>Item</th><th>Supplier</th><th>Qty</th><th>Unit Price</th><th>Total</th><th>Date</th></tr></thead>
+      <thead><tr><th>شماره سفارش</th><th>درخواست</th><th>اداره</th><th>دسته‌بندی</th><th>کالا</th><th>تأمین‌کننده</th><th>تعداد</th><th>قیمت واحد</th><th>مجموع</th><th>تاریخ</th></tr></thead>
       <tbody>
       <?php foreach ($rows as $p): ?>
         <tr>

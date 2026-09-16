@@ -10,33 +10,33 @@ $recent = fetch_all("SELECT c.delivery_date, d.name dept, c.item_name, c.quantit
 <div class="row g-3 mb-3">
   <div class="col-lg-6">
     <div class="card h-100">
-      <div class="card-header">Requests Awaiting Warehouse Check</div>
+      <div class="card-header">درخواست‌های در انتظار بررسی انبار</div>
       <div class="table-responsive"><table class="table table-sm table-hover align-middle mb-0">
-        <thead><tr><th>No</th><th>Department</th><th>Item</th><th>Qty</th></tr></thead>
+        <thead><tr><th>شماره</th><th>اداره</th><th>کالا</th><th>تعداد</th></tr></thead>
         <tbody>
         <?php foreach ($check as $r): ?>
           <tr><td><a href="<?php echo $base; ?>/warehouse/check.php?request_id=<?php echo $r['id']; ?>"><?php echo h($r['request_no']); ?></a></td>
               <td><?php echo h($r['dept']); ?></td><td><?php echo h($r['item_name']); ?></td>
-              <td><?php echo xnum($r['quantity']); ?> <?php echo h($r['unit']); ?></td></tr>
+              <td><?php echo h($r['quantity']); ?> <?php echo h(unit_label($r['unit'])); ?></td></tr>
         <?php endforeach; ?>
-        <?php if (count($check) === 0): ?><tr><td colspan="4" class="text-center text-muted py-3">Nothing to check.</td></tr><?php endif; ?>
+        <?php if (count($check) === 0): ?><tr><td colspan="4" class="text-center text-muted py-3">چیزی برای بررسی نیست.</td></tr><?php endif; ?>
         </tbody>
       </table></div>
     </div>
   </div>
   <div class="col-lg-6">
     <div class="card h-100">
-      <div class="card-header text-danger"><i class="bi bi-exclamation-triangle me-2"></i>Low Stock Alerts</div>
+      <div class="card-header text-danger"><i class="bi bi-exclamation-triangle me-2"></i>هشدار کمبود موجودی</div>
       <div class="table-responsive"><table class="table table-sm table-hover align-middle mb-0">
-        <thead><tr><th>Item</th><th>Stock</th><th>Min</th><th>Location</th></tr></thead>
+        <thead><tr><th>کالا</th><th>موجودی</th><th>حداقل</th><th>موقعیت</th></tr></thead>
         <tbody>
         <?php foreach ($low as $w): ?>
           <tr class="low-stock"><td><?php echo h($w['name']); ?></td>
-              <td><?php echo xnum($w['quantity']); ?> <?php echo h($w['unit']); ?></td>
+              <td><?php echo xnum($w['quantity']); ?> <?php echo h(unit_label($w['unit'])); ?></td>
               <td><?php echo xnum($w['min_stock']); ?></td>
               <td><?php echo h($w['location'] ?? '-'); ?></td></tr>
         <?php endforeach; ?>
-        <?php if (count($low) === 0): ?><tr><td colspan="4" class="text-center text-muted py-3">All items above reorder level &#128640;</td></tr><?php endif; ?>
+        <?php if (count($low) === 0): ?><tr><td colspan="4" class="text-center text-muted py-3">همه اقلام بالاتر از سطح سفارش مجدد هستند &#128640;</td></tr><?php endif; ?>
         </tbody>
       </table></div>
     </div>
@@ -44,16 +44,16 @@ $recent = fetch_all("SELECT c.delivery_date, d.name dept, c.item_name, c.quantit
 </div>
 <div class="card mb-4">
   <div class="card-header d-flex justify-content-between align-items-center">
-    <span><i class="bi bi-box-arrow-up me-2"></i>Recent Deliveries &amp; Usage</span>
-    <a class="small" href="<?php echo $base; ?>/consumptions/list.php">All usage &rarr;</a>
+    <span><i class="bi bi-box-arrow-up me-2"></i>تحویل‌ها و مصرف اخیر</span>
+    <a class="small" href="<?php echo $base; ?>/consumptions/list.php">همه مصرف‌ها &larr;</a>
   </div>
   <div class="table-responsive"><table class="table table-sm table-hover align-middle mb-0">
-    <thead><tr><th>Date</th><th>Department</th><th>Item</th><th>Qty</th><th>Source</th></tr></thead>
+    <thead><tr><th>تاریخ</th><th>اداره</th><th>کالا</th><th>تعداد</th><th>منبع</th></tr></thead>
     <tbody>
     <?php foreach ($recent as $c): ?>
       <tr><td class="text-nowrap"><?php echo h($c['delivery_date']); ?></td>
           <td><?php echo h($c['dept']); ?></td><td><?php echo h($c['item_name']); ?></td>
-          <td><?php echo xnum($c['quantity']); ?> <?php echo h($c['unit']); ?></td>
+          <td><?php echo xnum($c['quantity']); ?> <?php echo h(unit_label($c['unit'])); ?></td>
           <td><?php echo badge($c['source']); ?></td></tr>
     <?php endforeach; ?>
     </tbody>

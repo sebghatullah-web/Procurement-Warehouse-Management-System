@@ -11,10 +11,10 @@ $done = fetch_all("SELECT ca.*, p.purchase_no FROM committee_approvals ca
 <div class="row g-3 mb-3">
   <div class="col-lg-12">
     <div class="card h-100">
-      <div class="card-header"><i class="bi bi-people me-2"></i>Purchases Awaiting Committee Decision</div>
+      <div class="card-header"><i class="bi bi-people me-2"></i>خریدهای در انتظار تصمیم کمیته</div>
       <div class="table-responsive">
         <table class="table table-sm table-hover align-middle mb-0">
-          <thead><tr><th>PO No</th><th>Request</th><th>Department</th><th>Item</th><th>Quotes</th><th>Total (PKR)</th><th>Action</th></tr></thead>
+          <thead><tr><th>شماره سفارش</th><th>درخواست</th><th>اداره</th><th>کالا</th><th>قیمت‌ها</th><th>مجموع (PKR)</th><th>عملیات</th></tr></thead>
           <tbody>
           <?php foreach ($pending as $p): ?>
             <tr>
@@ -24,11 +24,11 @@ $done = fetch_all("SELECT ca.*, p.purchase_no FROM committee_approvals ca
               <td><?php echo h($p['item_name']); ?></td>
               <td><?php echo $p['quotes']; ?></td>
               <td class="text-nowrap"><?php echo money0($p['total_cost']); ?></td>
-              <td><a class="btn btn-sm btn-outline-primary" href="<?php echo $base; ?>/purchases/view.php?id=<?php echo $p['id']; ?>">Review &amp; Decide</a></td>
+              <td><a class="btn btn-sm btn-outline-primary" href="<?php echo $base; ?>/purchases/view.php?id=<?php echo $p['id']; ?>">بررسی و تصمیم</a></td>
             </tr>
           <?php endforeach; ?>
           <?php if (count($pending) === 0): ?>
-            <tr><td colspan="7" class="text-center text-muted py-4">Nothing awaiting committee approval right now.</td></tr>
+            <tr><td colspan="7" class="text-center text-muted py-4">در حال حاضر چیزی در انتظار تأیید کمیته نیست.</td></tr>
           <?php endif; ?>
           </tbody>
         </table>
@@ -37,10 +37,10 @@ $done = fetch_all("SELECT ca.*, p.purchase_no FROM committee_approvals ca
   </div>
 </div>
 <div class="card mb-4">
-  <div class="card-header">Recent Committee Decisions</div>
+  <div class="card-header">تصمیمات اخیر کمیته</div>
   <div class="table-responsive">
     <table class="table table-sm table-hover align-middle mb-0">
-      <thead><tr><th>Date</th><th>PO No</th><th>Member</th><th>Role</th><th>Decision</th><th>Comment</th></tr></thead>
+      <thead><tr><th>تاریخ</th><th>شماره سفارش</th><th>عضو</th><th>نقش</th><th>تصمیم</th><th>نظر</th></tr></thead>
       <tbody>
       <?php foreach ($done as $a): ?>
         <tr>
@@ -48,7 +48,7 @@ $done = fetch_all("SELECT ca.*, p.purchase_no FROM committee_approvals ca
           <td><?php echo h($a['purchase_no']); ?></td>
           <td><?php echo h($a['member_name']); ?></td>
           <td class="text-muted small"><?php echo h($a['member_role'] ?? '-'); ?></td>
-          <td><?php echo $a['decision'] === 'approved' ? '<span class="badge text-bg-success">Approved</span>' : '<span class="badge text-bg-danger">Rejected</span>'; ?></td>
+          <td><?php echo $a['decision'] === 'approved' ? '<span class="badge text-bg-success">تصویب شد</span>' : '<span class="badge text-bg-danger">رد شد</span>'; ?></td>
           <td class="text-muted small"><?php echo h($a['comment'] ?? '-'); ?></td>
         </tr>
       <?php endforeach; ?>

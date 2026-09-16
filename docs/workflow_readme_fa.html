@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>روند کاری - سیستم مدیریت تدارکات و انبار</title>
+<style>
+body{font-family:"Vazirmatn","Tahoma",serif;margin:2.5cm 2cm;font-size:12pt;line-height:1.8;color:#222;}
+h1{font-size:18pt;color:#1c2f4f;margin-bottom:4px;}
+.sub{color:#666;font-size:10pt;}
+h2{font-size:14pt;color:#2f4a75;margin:18px 0 8px;}
+h3{font-size:12pt;color:#333;}
+p,li{font-size:11.5pt;}
+code{background:#f0f0f0;padding:1px 5px;font-family:Consolas,monospace;font-size:9.5pt;}
+ol.steps li{line-height:1.9;}
+th,td{font-size:10.5pt;}
+hr{border:0;border-top:1px solid #ccc;margin:14px 0;}
+</style>
+</head>
+<body>
+
+<h1>روند کاری سیستم مدیریت تدارکات و انبار</h1>
+<div class="sub">Khawar PWMS &mdash; شرکت انکشافی خاور &mdash; راهنمای گام‌به‌گام</div>
+<hr>
+
+<h2>۱. خلاصه روند</h2>
+<ol class="steps">
+  <li><b>کارمند</b> درخواست تدارکات را ثبت می‌کند (<code>pending</code> = در انتظار بررسی).</li>
+  <li><b>مدیر تدارکات</b> درخواست را بررسی می‌کند:
+    <ul>
+      <li>غیرضروری باشد &rarr; درخواست بسته می‌شود (<code>closed</code>) و روند خاتمه.</li>
+      <li>ضروری باشد &rarr; برای بررسی انبار ارسال می‌شود (<code>warehouse_check</code> = بررسی انبار).</li>
+    </ul>
+  </li>
+  <li><b>مدیر انبار</b> موجودی را بررسی می‌کند:
+    <ul>
+      <li>کالا موجود باشد &rarr; صدور از انبار، ثبت مصرف و درخواست «کامل شده» (<code>completed</code>) &rarr; <b>پایان روند</b>.</li>
+      <li>موجود نباشد &rarr; درخواست به «نیاز به خرید» می‌رود (<code>purchase_required</code>).</li>
+    </ul>
+  </li>
+  <li><b>مدیر تدارکات</b> فرآیند خرید را شروع می‌کند:
+    <ul>
+      <li><b>فوری:</b> تأمین‌کننده و قیمت انتخاب می‌شود و سفارش فوراً ثبت می‌گردد (<code>purchased</code>/<code>ordered</code>).</li>
+      <li><b>عادی:</b> خرید باز می‌شود و قیمت‌ها جمع‌آوری می‌شود (<code>quotation_pending</code> = جمع‌آوری قیمت‌ها).</li>
+    </ul>
+  </li>
+  <li>در خرید عادی حداقل <b>۳ قیمت</b> از تأمین‌کنندگان ثبت می‌شود و به کمیته ارسال می‌گردد (<code>committee_pending</code> = در انتظار کمیته).</li>
+  <li><b>کمیته</b> (مالی + مدیریت + تدارکات) تصمیم می‌گیرد:
+    <ul>
+      <li><b>تصویب</b> &rarr; سفارش آماده نهایی‌سازی می‌شود (<code>approved</code>).</li>
+      <li><b>رد</b> &rarr; خرید «رد شده» می‌شود؛ تدارکات می‌تواند دوباره بین و ارسال کند (<code>rejected</code>).</li>
+    </ul>
+  </li>
+  <li><b>مدیر تدارکات</b> سفارش نهایی را با تأمین‌کننده انتخابی ثبت می‌کند (<code>ordered</code> = سفارش داده شده).</li>
+  <li><b>امنیت گیت</b> چک‌لیست رسید را تکمیل می‌کند: تعداد دریافت‌شده و سالم بودن کالا (<code>received</code> = دریافت شده در گیت).</li>
+  <li><b>مدیر انبار</b> تعیین تکلیف نهایی می‌کند:
+    <ul>
+      <li><b>ذخیره در انبار</b> &rarr; کالا به موجودی افزوده می‌شود.</li>
+      <li><b>تحویل مستقیم به اداره</b> &rarr; رکورد مصرف ثبت می‌شود.</li>
+    </ul>
+    در هر دو حالت درخواست «کامل شده» (<code>completed</code>) می‌شود و <b>روند خاتمه</b>.
+  </li>
+</ol>
+
+<h2>۲. وضعیت‌های درخواست</h2>
+<table border="1" cellspacing="0" cellpadding="6" width="100%">
+  <tr><th>وضعیت</th><th>معنا</th></tr>
+  <tr><td>در انتظار بررسی (pending)</td><td>ثبت شده و در صف مدیر تدارکات است.</td></tr>
+  <tr><td>بسته شده (closed)</td><td>غیرضروری اعلام شد؛ روند خاتمه.</td></tr>
+  <tr><td>بررسی انبار (warehouse_check)</td><td>تأیید شده؛ موجودی در حال بررسی است.</td></tr>
+  <tr><td>نیاز به خرید (purchase_required)</td><td>در انبار موجود نیست؛ خرید لازم است.</td></tr>
+  <tr><td>جمع‌آوری قیمت‌ها (quotation_pending)</td><td>قیمت‌ها از تأمین‌کنندگان جمع شده است.</td></tr>
+  <tr><td>در انتظار کمیته (committee_pending)</td><td>قیمت‌ها آماده؛ در انتظار تصمیم کمیته.</td></tr>
+  <tr><td>تصویب شده (approved)</td><td>کمیته تأیید کرد؛ آماده سفارش.</td></tr>
+  <tr><td>خریداری / سفارش (purchased)</td><td>سفارش نهایی ثبت شد.</td></tr>
+  <tr><td>دریافت شده در گیت (received)</td><td>چک‌لیست گیت تکمیل شد.</td></tr>
+  <tr><td>کامل شده (completed)</td><td>ذخیره یا تحویل شد؛ پایان روند.</td></tr>
+</table>
+
+<h2>۳. نقش‌ها</h2>
+<table border="1" cellspacing="0" cellpadding="6" width="100%">
+  <tr><th>نقش</th><th>مسئولیت</th></tr>
+  <tr><td>کارمند</td><td>ثبت و پیگیری درخواست‌های خود.</td></tr>
+  <tr><td>مدیر تدارکات</td><td>بررسی درخواست، شروع خرید، قیمت‌گیری، سفارش، مدیریت تأمین‌کنندگان.</td></tr>
+  <tr><td>مدیر انبار</td><td>بررسی موجودی، صدور، مدیریت اقلام، تعیین تکلیف.</td></tr>
+  <tr><td>امنیت گیت</td><td>چک‌لیست رسید کالاهای ورودی.</td></tr>
+  <tr><td>عضو کمیته</td><td>تصمیم تأیید یا رد خریدها.</td></tr>
+  <tr><td>مدیر عمومی</td><td>مشاهده گزارشات و داشبورد.</td></tr>
+  <tr><td>مدیر سیستم</td><td>مدیریت کاربران و ادارات.</td></tr>
+</table>
+
+<hr>
+<p style="font-size:9pt;color:#666;">این سند از کد واقعی سامانه استخراج شده و روند کامل از ثبت درخواست تا رسیدن کالا به اداره را شرح می‌دهد. &mdash; Khawar PWMS</p>
+
+</body>
+</html>
