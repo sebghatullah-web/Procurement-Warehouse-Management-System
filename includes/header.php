@@ -21,16 +21,8 @@ $base = BASE_URL;
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <link rel="stylesheet" href="<?php echo $base; ?>/assets/css/style.css">
 </head>
-<body>
+<body class="app-rtl">
 <div class="app-shell">
-  <aside class="app-sidebar" id="appSidebar">
-    <div class="sidebar-brand">
-      <i class="bi bi-box-seam fs-4"></i>
-      <span class="ms-2 fw-semibold">Khawar <span class="text-warning">PWMS</span></span>
-    </div>
-    <?php require __DIR__ . '/sidebar.php'; ?>
-    <div class="sidebar-foot small text-light-emphasis">&copy; <?php echo date('Y'); ?> شرکت انکشافی خاور</div>
-  </aside>
   <div class="app-main">
     <header class="app-topbar">
       <div class="d-flex align-items-center text-light gap-2">

@@ -2,7 +2,7 @@
 /** Admin dashboard panel - system overview. */
 $recentReq = fetch_all("SELECT r.id, r.request_no, d.name dept, r.item_name, r.status, r.request_date
   FROM procurement_requests r JOIN departments d ON d.id=r.department_id ORDER BY r.id DESC LIMIT 8");
-$recentPur = fetch_all("SELECT p.id, p.purchase_no, s.name supplier, p.total_cost, p.purchase_date, p.status
+$recentPur = fetch_all("SELECT p.id, p.purchase_no, s.name supplier, p.total_cost, p.currency, p.purchase_date, p.status
   FROM purchases p LEFT JOIN suppliers s ON s.id=p.supplier_id ORDER BY p.id DESC LIMIT 8");
 $low = fetch_all("SELECT w.name, w.quantity, w.unit, w.min_stock FROM warehouse_items w
   WHERE w.quantity <= w.min_stock ORDER BY (w.quantity - w.min_stock) ASC LIMIT 6");
@@ -42,12 +42,12 @@ $low = fetch_all("SELECT w.name, w.quantity, w.unit, w.min_stock FROM warehouse_
 <div class="card mb-4">
   <div class="card-header"><i class="bi bi-currency-dollar me-2"></i>آخرین خریدها</div>
   <div class="table-responsive"><table class="table table-sm table-hover align-middle mb-0">
-    <thead><tr><th>شماره سفارش</th><th>تأمین‌کننده</th><th>مجموع (PKR)</th><th>تاریخ</th><th>وضعیت</th></tr></thead>
+    <thead><tr><th>شماره سفارش</th><th>تأمین‌کننده</th><th>مجموع</th><th>تاریخ</th><th>وضعیت</th></tr></thead>
     <tbody>
     <?php foreach ($recentPur as $p): ?>
       <tr><td><a href="<?php echo $base; ?>/purchases/view.php?id=<?php echo $p['id']; ?>"><?php echo h($p['purchase_no']); ?></a></td>
           <td><?php echo h($p['supplier'] ?? '-'); ?></td>
-          <td class="text-nowrap"><?php echo money0($p['total_cost']); ?></td>
+          <td class="text-nowrap"><?php echo money_cur($p['total_cost'], $p['currency']); ?></td>
           <td class="text-muted small text-nowrap"><?php echo h($p['purchase_date'] ?? ''); ?></td>
           <td><?php echo badge($p['status']); ?></td></tr>
     <?php endforeach; ?>

@@ -65,6 +65,7 @@ CREATE TABLE `users` (
 CREATE TABLE `departments` (
   `id`         INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `name`       VARCHAR(100) NOT NULL UNIQUE,
+`code`       VARCHAR(20)  NOT NULL DEFAULT '' COMMENT 'short code e.g. SITE, HQ',
   `description` VARCHAR(255) NULL,
   `created_at` TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
@@ -147,6 +148,8 @@ CREATE TABLE `procurement_requests` (
                         'purchased','received','completed')
                         NOT NULL DEFAULT 'pending',
   `requested_by`   INT UNSIGNED NOT NULL,
+  `employee_name`  VARCHAR(150) NULL COMMENT 'employee name as entered on the request form',
+  `employee_position` VARCHAR(150) NULL COMMENT 'job position as entered on the request form',
   `reviewed_by`    INT UNSIGNED NULL,
   `review_note`    TEXT         NULL,
   `reviewed_at`    DATETIME     NULL,
@@ -178,6 +181,7 @@ CREATE TABLE `quotations` (
   `request_id`    INT UNSIGNED NOT NULL,
   `supplier_id`   INT UNSIGNED NOT NULL,
   `price`         DECIMAL(12,2) NOT NULL,
+  `currency`      ENUM('AFN','USD') NOT NULL DEFAULT 'AFN' COMMENT 'AFN = افغانی, USD = دالر',
   `delivery_days` INT          NULL,
   `notes`         TEXT         NULL,
   `created_at`    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -202,6 +206,7 @@ CREATE TABLE `purchases` (
   `quantity`         DECIMAL(12,2) NOT NULL,
   `unit_price`       DECIMAL(12,2) NULL,
   `total_cost`       DECIMAL(12,2) NULL,
+  `currency`         ENUM('AFN','USD') NOT NULL DEFAULT 'AFN' COMMENT 'AFN = افغانی, USD = دالر',
   `purchase_date`    DATE         NULL,
   `urgency`          ENUM('normal','urgent') NOT NULL DEFAULT 'normal',
   `payment_status`   ENUM('pending','paid')  NOT NULL DEFAULT 'pending',

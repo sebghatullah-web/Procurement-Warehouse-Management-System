@@ -1,6 +1,6 @@
 <?php
 /** Committee member dashboard panel. */
-$pending = fetch_all("SELECT p.id, p.purchase_no, p.total_cost, r.request_no, r.item_name, d.name dept,
+$pending = fetch_all("SELECT p.id, p.purchase_no, p.total_cost, p.currency, r.request_no, r.item_name, d.name dept,
         (SELECT COUNT(*) FROM quotations q WHERE q.request_id=r.id) quotes
   FROM purchases p JOIN procurement_requests r ON r.id=p.request_id
   JOIN departments d ON d.id=r.department_id
@@ -14,7 +14,7 @@ $done = fetch_all("SELECT ca.*, p.purchase_no FROM committee_approvals ca
       <div class="card-header"><i class="bi bi-people me-2"></i>خریدهای در انتظار تصمیم کمیته</div>
       <div class="table-responsive">
         <table class="table table-sm table-hover align-middle mb-0">
-          <thead><tr><th>شماره سفارش</th><th>درخواست</th><th>اداره</th><th>کالا</th><th>قیمت‌ها</th><th>مجموع (PKR)</th><th>عملیات</th></tr></thead>
+          <thead><tr><th>شماره سفارش</th><th>درخواست</th><th>اداره</th><th>کالا</th><th>قیمت‌ها</th><th>مجموع</th><th>عملیات</th></tr></thead>
           <tbody>
           <?php foreach ($pending as $p): ?>
             <tr>
@@ -23,7 +23,7 @@ $done = fetch_all("SELECT ca.*, p.purchase_no FROM committee_approvals ca
               <td><?php echo h($p['dept']); ?></td>
               <td><?php echo h($p['item_name']); ?></td>
               <td><?php echo $p['quotes']; ?></td>
-              <td class="text-nowrap"><?php echo money0($p['total_cost']); ?></td>
+              <td class="text-nowrap"><?php echo money_cur($p['total_cost'], $p['currency']); ?></td>
               <td><a class="btn btn-sm btn-outline-primary" href="<?php echo $base; ?>/purchases/view.php?id=<?php echo $p['id']; ?>">بررسی و تصمیم</a></td>
             </tr>
           <?php endforeach; ?>

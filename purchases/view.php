@@ -14,6 +14,8 @@ if ($id <= 0) { flash_set('danger', 'خرید نامعتبر است.'); redirect
 
 $p = fetch_one("SELECT p.*, r.request_no, r.item_name AS req_item, r.department_id,
                        r.quantity AS req_qty, r.unit AS req_unit, r.urgency, r.direct_delivery,
+                       r.needed_date AS req_needed, r.details AS req_details,
+                       r.employee_name AS req_employee, r.employee_position AS req_position,
                        d.name AS dept, s.name AS supplier_name
                 FROM purchases p
                 JOIN procurement_requests r ON r.id=p.request_id
@@ -29,12 +31,14 @@ if (is_post()) {
     if ($action === 'add_quote' && $isPro) {
         $sid   = (int)($_POST['supplier_id'] ?? 0);
         $price = (float)($_POST['price'] ?? 0);
+        $cur   = trim($_POST['currency'] ?? 'AFN');
+        if ($cur !== 'USD') { $cur = 'AFN'; }
         $days  = (int)($_POST['delivery_days'] ?? 0);
         $note  = trim($_POST['quote_note'] ?? '');
         if ($sid <= 0 || $price <= 0) { $errors[] = 'تأمین‌کننده و قیمت معتبر الزامی است.'; }
         else {
-            $ok = exec_sql("INSERT INTO quotations (request_id, supplier_id, price, delivery_days, notes)
-                            VALUES (" . (int)$p['request_id'] . ", $sid, $price, " . ($days ?: 'NULL') . ", '" . esc($note) . "')");
+            $ok = exec_sql("INSERT INTO quotations (request_id, supplier_id, price, currency, delivery_days, notes)
+                            VALUES (" . (int)$p['request_id'] . ", $sid, $price, '$cur', " . ($days ?: 'NULL') . ", '" . esc($note) . "')");
             if ($ok) { flash_set('success', 'قیمت اضافه شد.'); redirect_to($base . '/purchases/view.php?id=' . $id); }
             $errors[] = last_error();
         }
@@ -67,14 +71,16 @@ if (is_post()) {
         $quotePath = trim($_POST['quote_path'] ?? '');
         $supId     = (int)($_POST['supplier_id'] ?? 0);
         $unitPrice = (float)($_POST['unit_price'] ?? 0);
+        $cur       = trim($_POST['currency'] ?? 'AFN');
+        if ($cur !== 'USD') { $cur = 'AFN'; }
         $pDate     = trim($_POST['purchase_date'] ?? today());
         if ($unitPrice <= 0) { $errors[] = 'قیمت واحد باید بزرگتر از صفر باشد.'; }
         else {
             $supSql = ($supId > 0) ? ", supplier_id=$supId" : '';
             $total  = $unitPrice * (float)$p['quantity'];
-            $ok = exec_sql("UPDATE purchases SET unit_price=$unitPrice, total_cost=$total,
+            $ok = exec_sql("UPDATE purchases SET unit_price=$unitPrice, total_cost=$total, currency='$cur',
                             purchase_date='" . esc($pDate) . "', status='ordered'$supSql WHERE id=$id");
-            if ($ok) { flash_set('success', 'سفارش نهایی شد @ ' . money0($unitPrice) . ' PKR/واحد.'); redirect_to($base . '/purchases/view.php?id=' . $id); }
+            if ($ok) { flash_set('success', 'سفارش نهایی شد @ ' . money_cur($unitPrice, $cur) . '/واحد.'); redirect_to($base . '/purchases/view.php?id=' . $id); }
             $errors[] = last_error();
         }
     }
@@ -105,14 +111,20 @@ require_once __DIR__ . '/../includes/header.php';
     <div class="row">
       <div class="col-md-3"><strong>درخواست</strong><br><a href="<?php echo $base; ?>/requests/view.php?id=<?php echo $p['request_id']; ?>"><?php echo h($p['request_no']); ?></a></div>
       <div class="col-md-3"><strong>اداره</strong><br><?php echo h($p['dept']); ?></div>
+      <?php if ($p['req_employee']): ?>
+      <div class="col-md-3"><strong>کارمند (درخواست‌کننده)</strong><br><?php echo h($p['req_employee']); ?><?php if ($p['req_position'] && $p['req_position'] !== '—'): ?> <span class="text-muted small">(<?php echo h($p['req_position']); ?>)</span><?php endif; ?></div>
+      <?php endif; ?>
       <div class="col-md-2"><strong>تعداد</strong><br><?php echo xnum($p['quantity']); ?> <?php echo h($p['req_unit']); ?></div>
       <div class="col-md-2"><strong>فوریت</strong><br><?php echo badge($p['urgency']); ?></div>
       <div class="col-md-2"><strong>تحویل مستقیم</strong><br><?php echo $p['direct_delivery'] ? 'بله' : 'خیر'; ?></div>
+      <?php if ($p['req_needed']): ?>
+      <div class="col-md-3"><strong>تاریخ مورد نیاز</strong><br class="text-nowrap"><?php echo h($p['req_needed']); ?></div>
+      <?php endif; ?>
       <?php if ($p['supplier_name']): ?>
       <div class="col-md-3"><strong>تأمین‌کننده</strong><br><?php echo h($p['supplier_name']); ?></div>
       <?php endif; ?>
       <?php if ($p['total_cost']): ?>
-      <div class="col-md-3"><strong>مجموع هزینه</strong><br class="text-nowrap"><?php echo money0($p['total_cost']); ?> PKR</div>
+      <div class="col-md-3"><strong>مجموع هزینه</strong><br class="text-nowrap"><?php echo money_cur($p['total_cost'], $p['currency']); ?></div>
       <?php endif; ?>
       <?php if ($p['purchase_date']): ?>
       <div class="col-md-3"><strong>تاریخ خرید</strong><br class="text-nowrap"><?php echo h($p['purchase_date']); ?></div>
@@ -121,6 +133,9 @@ require_once __DIR__ . '/../includes/header.php';
       <div class="col-md-3"><strong>پرداخت</strong><br><?php echo badge($p['payment_status']); ?></div>
       <?php endif; ?>
     </div>
+    <?php if ($p['req_details']): ?>
+    <div class="mt-2"><strong class="text-muted small">جزئیات کالا</strong><br><?php echo h($p['req_details']); ?></div>
+    <?php endif; ?>
     <?php if (count($errors) > 0): ?>
       <div class="alert alert-danger mt-2 py-2"><?php foreach ($errors as $e): ?><div><?php echo h($e); ?></div><?php endforeach; ?></div>
     <?php endif; ?>
@@ -141,10 +156,16 @@ require_once __DIR__ . '/../includes/header.php';
           <?php endforeach; ?>
         </select>
       </div>
-      <div class="col-md-2"><input type="number" name="price" class="form-control" placeholder="قیمت واحد (PKR)" required min="0.01" step="any"></div>
-      <div class="col-md-2"><input type="number" name="delivery_days" class="form-control" placeholder="روز" min="0"></div>
+      <div class="col-md-3"><input type="number" name="price" class="form-control" placeholder="قیمت واحد" required min="0.01" step="any"></div>
+      <div class="col-md-2"><label class="form-label">ارز</label>
+        <select name="currency" class="form-select form-select-sm">
+          <option value="AFN">افغانی (؋)</option>
+          <option value="USD">دالر ($)</option>
+        </select></div>
+      <div class="col-md-1"><label class="form-label">تحویل</label>
+        <input type="number" name="delivery_days" class="form-control" placeholder="روز" min="0"></div>
       <div class="col-md-3"><input type="text" name="quote_note" class="form-control" placeholder="یادداشت (اختیاری)"></div>
-      <div class="col-md-1"><button class="btn btn-primary w-100" type="submit">افزودن</button></div>
+      <div class="col-md-3"><button class="btn btn-primary w-100" type="submit">افزودن</button></div>
     </form>
   </div>
 </div>
@@ -154,11 +175,12 @@ require_once __DIR__ . '/../includes/header.php';
   <div class="card-header"><i class="bi bi-tags me-2"></i>قیمت‌ها (<?php echo count($quotations); ?>)</div>
   <div class="table-responsive">
     <table class="table table-sm table-hover align-middle mb-0">
-      <thead><tr><th>تأمین‌کننده</th><th>قیمت واحد (PKR)</th><th>تحویل (روز)</th><th>یادداشت‌ها</th></tr></thead>
+      <thead><tr><th>تأمین‌کننده</th><th>قیمت واحد</th><th>ارز</th><th>تحویل (روز)</th><th>یادداشت‌ها</th></tr></thead>
       <tbody>
       <?php foreach ($quotations as $qt): ?>
         <tr><td><?php echo h($qt['supplier']); ?></td>
-            <td class="text-nowrap"><?php echo money0($qt['price']); ?></td>
+            <td class="text-nowrap"><?php echo money_cur($qt['price'], $qt['currency']); ?></td>
+            <td><?php echo cur_label($qt['currency']); ?></td>
             <td><?php echo h($qt['delivery_days'] ?? '—'); ?></td>
             <td class="text-muted small"><?php echo h($qt['notes'] ?? '—'); ?></td></tr>
       <?php endforeach; ?>
@@ -228,7 +250,7 @@ require_once __DIR__ . '/../includes/header.php';
         <select name="quote_path" class="form-select" id="quoteSelect">
           <option value="">-- انتخاب قیمت --</option>
           <?php foreach ($quotations as $qt): ?>
-          <option value="<?php echo $qt['supplier_id']; ?>|<?php echo money0($qt['price']); ?>"><?php echo h($qt['supplier']); ?> @ <?php echo money0($qt['price']); ?></option>
+          <option value="<?php echo $qt['id'] . '|' . (float)$qt['price']; ?>" data-cur="<?php echo h($qt['currency'] ?? 'AFN'); ?>"><?php echo h($qt['supplier']); ?> @ <?php echo money_cur($qt['price'], $qt['currency']); ?></option>
           <?php endforeach; ?>
         </select>
       </div>
@@ -239,8 +261,13 @@ require_once __DIR__ . '/../includes/header.php';
           <option value="<?php echo $s['id']; ?>"><?php echo h($s['name']); ?></option>
           <?php endforeach; ?>
         </select></div>
-      <div class="col-md-2"><label class="form-label">قیمت واحد (PKR)</label>
+      <div class="col-md-2"><label class="form-label">قیمت واحد</label>
         <input type="number" name="unit_price" class="form-control" min="0.01" step="any" required></div>
+      <div class="col-md-2"><label class="form-label">ارز</label>
+        <select name="currency" id="currency" class="form-select">
+          <option value="AFN">افغانی (؋)</option>
+          <option value="USD">دالر ($)</option>
+        </select></div>
       <div class="col-md-2"><label class="form-label">تاریخ</label>
         <input type="date" name="purchase_date" class="form-control" required value="<?php echo today(); ?>"></div>
       <div class="col-md-1 pt-4"><button class="btn btn-success w-100" type="submit">سفارش</button></div>

@@ -61,7 +61,7 @@ require_once __DIR__ . '/../includes/header.php';
           <div class="col-md-4"><div class="text-muted small">کالا</div><div class="fw-semibold"><?php echo h($r['item_name']); ?></div></div>
           <div class="col-md-4"><div class="text-muted small">تعداد</div><div class="fw-semibold"><?php echo h($r['quantity']); ?> <?php echo h(unit_label($r['unit'])); ?></div></div>
           <div class="col-md-4"><div class="text-muted small">فوریت</div><?php echo badge($r['urgency']); ?></div>
-          <div class="col-md-4"><div class="text-muted small">درخواست‌کننده</div><div class="fw-semibold"><?php echo h($r['requester']); ?></div></div>
+          <div class="col-md-4"><div class="text-muted small">کارمند / درخواست‌کننده</div><div class="fw-semibold"><?php echo h($r['employee_name'] ?? $r['requester']); ?><?php if ($r['employee_position']): ?> <span class="text-muted small">(<?php echo h($r['employee_position']); ?>)</span><?php endif; ?></div></div>
           <div class="col-md-4"><div class="text-muted small">تحویل مستقیم</div><div class="fw-semibold"><?php echo $r['direct_delivery'] ? 'بله' : 'خیر'; ?></div></div>
           <div class="col-md-4"><div class="text-muted small">بررسی‌کننده</div><div class="fw-semibold"><?php echo h($r['reviewer'] ?? '—'); ?></div></div>
         </div>
@@ -97,7 +97,7 @@ require_once __DIR__ . '/../includes/header.php';
       <div class="card-body">
         <div class="fw-semibold mb-2"><?php echo badge($r['status']); ?></div>
         <ul class="small text-muted-2 mb-2 ps-3">
-          <li>ثبت شده توسط <?php echo h($r['requester']); ?></li>
+          <li>ثبت شده توسط <?php echo h($r['employee_name'] ?? $r['requester']); ?><?php if ($r['employee_position'] && $r['employee_position'] !== '—'): ?> (<?php echo h($r['employee_position']); ?>)<?php endif; ?></li>
           <?php if ($r['status'] !== 'pending' && $r['status'] !== 'closed'): ?>
           <li>بررسی و تأیید شده توسط تدارکات</li>
           <?php endif; ?>
@@ -151,8 +151,8 @@ require_once __DIR__ . '/../includes/header.php';
         <tr><td><a href="<?php echo $base; ?>/purchases/view.php?id=<?php echo $p['id']; ?>"><?php echo h($p['purchase_no']); ?></a></td>
             <td><?php echo h($p['supplier'] ?? '—'); ?></td>
             <td><?php echo xnum($p['quantity']); ?></td>
-            <td class="text-nowrap"><?php echo money0($p['unit_price']); ?></td>
-            <td class="text-nowrap fw-semibold"><?php echo money0($p['total_cost']); ?></td>
+            <td class="text-nowrap"><?php echo money_cur($p['unit_price'], $p['currency']); ?></td>
+            <td class="text-nowrap fw-semibold"><?php echo money_cur($p['total_cost'], $p['currency']); ?></td>
             <td><?php echo badge($p['status']); ?></td>
             <td class="text-muted small text-nowrap"><?php echo h($p['purchase_date'] ?? '—'); ?></td></tr>
       <?php endforeach; ?>
@@ -167,11 +167,12 @@ require_once __DIR__ . '/../includes/header.php';
   <div class="card-header"><i class="bi bi-tags me-2"></i>قیمت‌های تأمین‌کنندگان</div>
   <div class="table-responsive">
     <table class="table table-sm align-middle mb-0">
-      <thead><tr><th>تأمین‌کننده</th><th>قیمت واحد</th><th>زمان تحویل (روز)</th><th>یادداشت</th></tr></thead>
+      <thead><tr><th>تأمین‌کننده</th><th>قیمت واحد</th><th>ارز</th><th>زمان تحویل (روز)</th><th>یادداشت</th></tr></thead>
       <tbody>
       <?php foreach ($quotations as $qt): ?>
         <tr><td><?php echo h($qt['supplier']); ?></td>
-            <td class="text-nowrap"><?php echo money0($qt['price']); ?></td>
+            <td class="text-nowrap"><?php echo money_cur($qt['price'], $qt['currency']); ?></td>
+            <td><?php echo cur_label($qt['currency']); ?></td>
             <td><?php echo h($qt['delivery_days'] ?? '—'); ?></td>
             <td class="text-muted small"><?php echo h($qt['notes'] ?? '—'); ?></td></tr>
       <?php endforeach; ?>

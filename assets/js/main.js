@@ -73,6 +73,16 @@
     }
   });
 
+  /* ---------- Quote select: sync currency from chosen quote ---------- */
+  document.addEventListener('change', function (e) {
+    if (e.target && e.target.id === 'quoteSelect') {
+      var cur = document.getElementById('currency');
+      if (!cur) return;
+      var chosen = Array.prototype.find.call(e.target.options, function (o) { return o.selected && o.getAttribute('data-cur'); });
+      if (chosen && chosen.getAttribute('data-cur')) { cur.value = chosen.getAttribute('data-cur'); }
+    }
+  });
+
   /* ---------- Auto-submit filter forms on change ---------- */
   document.querySelectorAll('select[data-autosubmit]').forEach(function (s) {
     s.addEventListener('change', function () {

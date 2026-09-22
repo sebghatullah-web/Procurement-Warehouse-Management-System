@@ -16,6 +16,8 @@ $old = $_POST;
 
 if (is_post()) {
     $dept_id = (int)($old['department_id'] ?? 0);
+    $emp_name = trim($old['employee_name'] ?? '');
+    $emp_pos  = trim($old['employee_position'] ?? '');
     $item    = trim($old['item_name'] ?? '');
     $cat_id  = (int)($old['category_id'] ?? 0);
     $qty     = trim($old['quantity'] ?? '');
@@ -28,6 +30,8 @@ if (is_post()) {
     $ndate   = trim($old['needed_date'] ?? '');
 
     if (!$dept_id)       { $errors[] = 'لطفاً یک اداره را انتخاب کنید.'; }
+    if ($emp_name === '') { $errors[] = 'اسم کارمند (درخواست‌کننده) را درج کنید.'; }
+    if ($emp_pos === '')  { $emp_pos = '—'; }
     if ($item === '')    { $errors[] = 'نام کالا الزامی است.'; }
     if ($qty === '')     { $errors[] = 'مقدار / تعداد کالا را وارد کنید.'; }
     if ($rdate === '')   { $rdate = today(); }
@@ -45,10 +49,12 @@ if (is_post()) {
 
         $sql = "INSERT INTO procurement_requests
                 (request_no, department_id, category_id, item_name, quantity, unit,
-                 urgency, direct_delivery, reason, details, status, requested_by, request_date, needed_date)
+                 urgency, direct_delivery, reason, details, status, requested_by,
+                 employee_name, employee_position, request_date, needed_date)
                 VALUES ('" . esc($request_no) . "', $dept_id, " . ($cat_id ? $cat_id : 'NULL') . ",
                         '" . esc($item) . "', '" . esc($qty) . "', '" . esc($unit) . "', '$urgency', $direct,
-                        '" . esc($reason) . "', $details_sql, 'pending', " . (int)$user['id'] . ", '$rdate', $ndate_sql)";
+                        '" . esc($reason) . "', $details_sql, 'pending', " . (int)$user['id'] . ",
+                        '" . esc($emp_name) . "', '" . esc($emp_pos) . "', '$rdate', $ndate_sql)";
         if (exec_sql($sql)) {
             flash_set('success', 'درخواست ' . $request_no . ' با موفقیت ثبت شد.');
             redirect_to($base . '/requests/view.php?id=' . inserted_id());
@@ -74,6 +80,20 @@ require_once __DIR__ . '/../includes/header.php';
         <?php endif; ?>
         <form method="post">
           <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label required">اسم کارمند (درخواست‌کننده)</label>
+              <input type="text" name="employee_name" class="form-control" required
+                     value="<?php echo h($old['employee_name'] ?? $user['name']); ?>"
+                     placeholder="اسم کامل کارمند">
+              <div class="form-text text-muted small">به‌جای نام کاربری، اسم واقعی کارمند درج می‌شود.</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label required">موقعیت وظیفه‌ای</label>
+              <input type="text" name="employee_position" class="form-control" required
+                     value="<?php echo h($old['employee_position'] ?? ''); ?>"
+                     placeholder="مثلاً انجینر ساختمانی، حسابدار، کارمند تدارکات...">
+              <div class="form-text text-muted small">موقعیت و سمت وظیفه‌ای کارمند را درج کنید.</div>
+            </div>
             <div class="col-md-6">
               <label class="form-label required">دیپارتمنت & بخش</label>
               <select name="department_id" class="form-select" required>

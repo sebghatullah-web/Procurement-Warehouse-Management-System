@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>راهنمای روند درخواست مواد و وسایل — سامانه مدیریت تدارکات و انبار</title>
+<style>
+@font-face{font-family:'B Nazanin';src:url('../assets/fonts/BNazanin.ttf') format('truetype');font-weight:400;font-style:normal;}
+@font-face{font-family:'B Nazanin';src:url('../assets/fonts/BNazanin-Bold.ttf') format('truetype');font-weight:700;font-style:normal;}
+@page{size:A4;margin:15mm 13mm 16mm;}
+*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+html{font-family:'B Nazanin',Tahoma,'Segoe UI',Arial,sans-serif;}
+body{margin:0;color:#1c2636;font-size:11.5pt;line-height:1.85;}
+code,.path{direction:ltr;unicode-bidi:embed;font-family:Consolas,'Courier New',monospace;font-size:9pt;background:#eef1f6;padding:0 5px;border-radius:4px;color:#1c2f4f;white-space:nowrap;}
+table{border-collapse:collapse;width:100%;margin:8px 0 4px;}
+th,td{border:1px solid #cdd5e0;padding:6px 10px;font-size:10.5pt;text-align:right;vertical-align:top;}
+th{background:#1c2f4f;color:#fff;font-weight:bold;}
+tr:nth-child(even) td{background:#f5f7fb;}
+.small{font-size:9.5pt;}
+.cover{border-bottom:4px solid #e3c04b;padding-bottom:12px;margin-bottom:18px;}
+.cover .org{font-size:13pt;font-weight:bold;color:#1c2f4f;}
+.cover h1{font-size:17pt;font-weight:bold;margin:8px 0 4px;color:#16233a;line-height:1.5;}
+.cover .sub{font-size:10.5pt;color:#5a6b82;}
+.meta{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 6px;}
+.meta div{flex:1;min-width:180px;border:1px solid #dde4ee;border-radius:8px;padding:7px 12px;background:#f8fafd;}
+.meta b{display:block;color:#1c2f4f;font-size:9.5pt;}
+.meta span{font-size:10pt;}
+h2{background:#1c2f4f;color:#fff;border-radius:8px;padding:8px 14px;font-size:12.5pt;margin:26px 0 12px;display:flex;align-items:center;gap:10px;page-break-after:avoid;}
+h2 .n{background:#e3c04b;color:#1c2f4f;width:26px;height:26px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-weight:bold;flex-shrink:0;}
+h3{font-size:11.5pt;margin:14px 0 6px;color:#16233a;}
+p{margin:6px 0;}
+ul,ol{margin:4px 0 8px;padding-right:22px;}
+li{margin-bottom:3px;}
+.badge{display:inline-block;font-size:8.5pt;padding:1px 8px;border-radius:99px;margin:0 2px;white-space:nowrap;}
+.b-role{background:#eaf2fe;color:#1c2f4f;border:1px solid #c9dcf5;}
+.b-status{background:#f7eef0;color:#b02a2a;border:1px solid #ecd6da;}
+.b-end{background:#e6f4ea;color:#1d7a3c;border:1px solid #cde8d6;}
+.b-page{background:#f2f2f5;color:#3a3f4b;border:1px solid #dde4ee;}
+.flow{background:#f5f7fb;border:1.5px solid #dde4ee;border-radius:12px;padding:14px 12px;margin:14px 0;}
+.frow{display:flex;align-items:stretch;justify-content:center;gap:5px;flex-wrap:wrap;margin-top:8px;}
+.fnode{background:#fff;border:1.5px solid #1c2f4f;border-radius:8px;padding:7px 8px;min-width:80px;text-align:center;font-size:9pt;font-weight:bold;box-shadow:0 1px 3px rgba(22,35,58,.10);}
+.fnode small{display:block;font-weight:normal;color:#5a6b82;margin-top:2px;font-size:7.5pt;direction:ltr;}
+.farrow{align-self:center;color:#1c2f4f;font-size:13pt;font-weight:bold;padding:0 1px;}
+.flegend{font-size:9pt;color:#5a6b82;margin-top:8px;text-align:center;}
+.step{border:1px solid #dde4ee;border-radius:10px;padding:12px 16px;margin-bottom:12px;background:#fff;page-break-inside:avoid;}
+.step .h{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.step .num{width:30px;height:30px;border-radius:8px;background:#eaf2fe;color:#1c2f4f;font-weight:bold;display:inline-flex;align-items:center;justify-content:center;font-size:12pt;flex-shrink:0;}
+.step .ttl{font-weight:bold;font-size:11.5pt;color:#16233a;}
+.tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:3px;}
+.badge{font-size:8.5pt;}
+.step p{margin:6px 0;}
+.step ul{margin:2px 0 2px;}
+.note{border-right:4px solid #e3c04b;background:#fdf9ec;padding:8px 12px;border-radius:6px;font-size:10pt;margin:8px 0;}
+.endbox{border:1.5px solid #1d7a3c;background:#eef7f0;border-radius:8px;padding:7px 12px;margin-top:8px;font-weight:bold;color:#1d7a3c;}
+.pagebreak{page-break-before:always;}
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="org">سامانه مدیریت تدارکات و انبار (PWMS) — شرکت انکشافی خاور</div>
+  <h1>راهنمای روند درخواست مواد و وسایل مورد ضرورت<br>از ثبت درخواست تا تحویل نهایی به اداره</h1>
+  <div class="sub">سند ارائه برای جلسه تدارکات و گدام‌داری — شرح گام‌به‌گام جریان کاری در سیستم</div>
+</div>
+
+<div class="meta">
+  <div><b>تهیه‌کننده</b><span>اداره تدارکات / مدیر سیستم — بر اساس کد واقعی سامانه</span></div>
+  <div><b>مخاطب</b><span>مدیران تدارکات، انبار (گدام)، کمیته خرید و مدیران عمومی</span></div>
+  <div><b>هدف</b><span>شفاف‌سازی مسیر یک درخواست از ثبت تا رسیدن کالا به اداره درخواست‌کننده</span></div>
+</div>
+
+<h2><span class="n">۱</span> نمای کلی روند</h2>
+<p>هر درخواست مواد یا وسایل در سامانه یک «مسیر استاندارد و قابل ردیابی» را طی می‌کند. در هر مرحله وضعیت درخواست تغییر می‌کند، فرد مسئول و زمان انجام ثبت می‌شود و امکان پیگیری برای درخواست‌کننده و مدیران وجود دارد. روند عمومی به شکل زیر است:</p>
+
+<div class="flow">
+  <b style="color:#1c2f4f;">چرخه کامل روند (۹ گام)</b>
+  <div class="frow">
+    <div class="fnode">ثبت درخواست<small>1. employee</small></div>
+    <div class="farrow">←</div>
+    <div class="fnode">بررسی تدارکات<small>2. تایید / بستن</small></div>
+    <div class="farrow">←</div>
+    <div class="fnode">بررسی انبار<small>3. موجودی</small></div>
+    <div class="farrow">←</div>
+    <div class="fnode">شروع خرید<small>4. عادی / فوری</small></div>
+    <div class="farrow">←</div>
+    <div class="fnode">جمع‌آوری قیمت<small>5. ≥ ۳ قیمت</small></div>
+    <div class="farrow">←</div>
+    <div class="fnode">تصمیم کمیته<small>6. تصویب / رد</small></div>
+    <div class="farrow">←</div>
+    <div class="fnode">سفارش نهایی<small>7. تأمین‌کننده</small></div>
+    <div class="farrow">←</div>
+    <div class="fnode">رسید گیت<small>8. چک‌لیست</small></div>
+    <div class="farrow">←</div>
+    <div class="fnode">ذخیره یا تحویل<small>9. تکمیل</small></div>
+  </div>
+  <div class="flegend">مسیر فرعی: اگر کالا در انبار موجود باشد، روند در «گام ۳» با صدور از انبار پایان می‌یابد. اگر خرید «فوری» ثبت شود، گام‌های ۵ و ۶ رد می‌شوند.</div>
+</div>
+
+<div class="note"><b>دو استثنای مهم:</b> ۱) درخواست‌هایی که مدیر تدارکات «غیرضروری» تشخیص دهد در همان گام ۲ بسته شده و از جریان خارج می‌شوند. ۲) خرید‌های «فوری» از قیمت‌گیری گروهی و تصویب کمیته مستثنی هستند و مستقیم به سفارش می‌روند.</div>
+
+<h2><span class="n">۲</span> گام‌های روند به تفصیل</h2>
+
+<div class="step">
+  <div class="h"><span class="num">۱</span><span class="ttl">ثبت درخواست توسط کارمند</span>
+    <span class="tags"><span class="badge b-role">کارمند / کارمند هر اداره</span><span class="badge b-status">وضعیت: در انتظار بررسی</span><span class="badge b-page">requests/create.php</span></span>
+  </div>
+  <p>کارمند از منوی «درخواست‌ها ← ثبت درخواست جدید» وارد می‌شود و فورم را تکمیل می‌کند. فورم شامل معلومات زیر است:</p>
+  <ul>
+    <li><b>اداره درخواست‌کننده</b> — لیست ادارات (مثلاً تخنیکی، مالی، لوژستیک).</li>
+    <li><b>نام کارمند و موقعیت وظیفه‌ای (پست)</b> — نام درخواست‌کننده و سمت او.</li>
+    <li><b>نام کالا/جنس مورد نیاز، تعداد و واحد</b> — واحدهای پشتیبانی‌شده: عدد، بسته، تن، کیلوگرام، ریم، رول، لیتر، ست، جوره، باکس، کویل، متر و ….</li>
+    <li><b>دسته‌بندی کالا</b> — انتخاب از دسته‌بندی‌های تعریف‌شده در سیستم.</li>
+    <li><b>فوریت</b> — <b>عادی</b> (مسیر قیمت‌گیری گروهی و کمیته) یا <b>فوری</b> (مسیر خرید فوری).</li>
+    <li><b>تحویل مستقیم</b> — اگر کالا باید مستقیماً به اداره برسد و در انبار ذخیره نشود.</li>
+    <li><b>برآورد قیمت و واحد پول</b> — قیمت تخمینی با انتخاب ارز: <b>افغانی (AFN)</b> یا <b>دالر امریکایی (USD)</b>.</li>
+    <li><b>تاریخ مورد نیاز، دلیل درخواست و جزئیات تکمیلی</b> — برای تصمیم‌گیری بهتر در مراحل بعدی.</li>
+  </ul>
+  <p>نتیجه: سیستم شماره درخواست (مثلاً <span class="path">REQ-0001</span>) را خودکار صادر می‌کند و درخواست در صف مدیر تدارکات با وضعیت «<b>در انتظار بررسی</b>» قرار می‌گیرد. کارمند در هر زمان از «همه درخواست‌ها» می‌تواند وضعیت و تاریخچه را ببیند.</p>
+</div>
+
+<div class="step">
+  <div class="h"><span class="num">۲</span><span class="ttl">بررسی و تصمیم مدیر تدارکات</span>
+    <span class="tags"><span class="badge b-role">مدیر تدارکات</span><span class="badge b-status">تایید ← انبار | بستن ← پایان</span><span class="badge b-page">requests/review.php</span></span>
+  </div>
+  <p>مدیر تدارکات درخواست را از نظر ضرورت، فوریت و برآورد قیمت بررسی می‌کند و یکی از دو تصمیم زیر را می‌گیرد:</p>
+  <ul>
+    <li><b>تأیید (ضروری است):</b> درخواست با یک یادداشت اختیاری برای انبار ارسال می‌شود و وضعیت آن «<b>بررسی انبار</b>» می‌گردد. فرد تأییدکننده و زمان تأیید ثبت می‌شود.</li>
+    <li><b>بستن (غیرضروری):</b> مدیر باید دلیل بستن (الزامی) را بنویسد؛ درخواست «بسته» شده، صرف‌خواندنی می‌ماند و <b>روند خاتمه</b> می‌یابد.</li>
+  </ul>
+  <p class="small">یادداشت بررسی (review_note) و زمان ثبت در سیستم بایگانی می‌شود تا در صورت سوال شفاف باشد.</p>
+</div>
+
+<div class="step">
+  <div class="h"><span class="num">۳</span><span class="ttl">بررسی موجودی انبار و صدور</span>
+    <span class="tags"><span class="badge b-role">مدیر انبار</span><span class="badge b-status">صدور ← تکمیل | عدم موجودی ← خرید</span><span class="badge b-page">warehouse/check.php</span></span>
+  </div>
+  <p>مدیر انبار کالای درخواست را در جدول موجودی جستجو می‌کند و مطابق دو حالت عمل می‌کند:</p>
+  <ul>
+    <li><b>کالا موجود و تعداد کافی:</b> دکمه «صدور به اداره» — سیستم تعداد را از موجودی کسر می‌کند، یک رکورد مصرف ثبت می‌شود و درخواست «<b>کامل شده</b>» اعلام می‌گردد؛ یعنی <b>روند خاتمه</b> و کالا از انبار به اداره صادر شده است.</li>
+    <li><b>موجود نیست یا ناکافی:</b> دکمه «ارسال به فرآیند خرید» — با یک یادداشت انبار، وضعیت درخواست «<b>نیاز به خرید</b>» می‌شود و در صف مدیر تدارکات قرار می‌گیرد.</li>
+  </ul>
+  <p class="small text">اگر تعداد موجودی کمتر از خواسته باشد سیستم هشدار می‌دهد و اجازه صدور نمی‌دهد (پشتیبانی ضد کمبود).</p>
+</div>
+
+<div class="step">
+  <div class="h"><span class="num">۴</span><span class="ttl">شروع فرآیند خرید</span>
+    <span class="tags"><span class="badge b-role">مدیر تدارکات</span><span class="badge b-status">خرید عادی / خرید فوری</span><span class="badge b-page">purchases/create.php</span></span>
+  </div>
+  <p>برای درخواست‌های «نیاز به خرید» (و «فوری»)، مدیر تدارکات فرآیند خرید را شروع می‌کند:</p>
+  <ul>
+    <li><b>خرید عادی:</b> یک رکورد «خرید» با وضعیت «<b>جمع‌آوری قیمت‌ها</b>» باز می‌شود تا قیمت‌ها از تأمین‌کنندگان جمع‌آوری شود.</li>
+    <li><b>خرید فوری:</b> تأمین‌کننده و قیمت (با واحد پول AFN/USD) همان‌حالا انتخاب و <b>سفارش مستقیم</b> ثبت می‌شود؛ گام‌های قیمت‌گیری متعدد و کمیته رد می‌شوند.</li>
+  </ul>
+  <p class="small text">برای درخواست‌های فوری، سیستم دو مجموعه فورم ارائه می‌کند: فرم کامل انتخاب تأمین‌کننده + قیمت + زمان تحویل.</p>
+</div>
+
+<div class="step">
+  <div class="h"><span class="num">۵</span><span class="ttl">جمع‌آوری قیمت‌ها از تأمین‌کنندگان</span>
+    <span class="tags"><span class="badge b-role">مدیر تدارکات</span><span class="badge b-status">جمع‌آوری قیمت‌ها ← در انتظار کمیته</span><span class="badge b-page">purchases/view.php</span></span>
+  </div>
+  <p>در خرید عادی، مدیر تدارکات برای مقایسه منصفانه باید حداقل <b>۳ قیمت</b> از تأمین‌کنندگان جداگانه ثبت کند:</p>
+  <ul>
+    <li>نام تأمین‌کننده، <b>قیمت</b>، <b>واحد پول (افغانی/دالر)</b>، <b>زمان تحویل</b> و یادداشت.</li>
+    <li>بعد از تکمیل حداقل ۳ قیمت، دکمه «ارسال به کمیته» فعال می‌شود و وضعیت خرید «<b>در انتظار کمیته</b>» می‌گردد.</li>
+  </ul>
+  <p class="small text">قیمت‌های هر تأمین‌کننده با واحد پول انتخابی خود (AFN یا USD) جدا ثبت می‌شود تا مقایسه دقیق باشد.</p>
+</div>
+
+<div class="step">
+  <div class="h"><span class="num">۶</span><span class="ttl">تصمیم کمیته خرید</span>
+    <span class="tags"><span class="badge b-role">اعضای کمیته (مالی، مدیریت، تدارکات)</span><span class="badge b-status">در انتظار کمیته ← تصویب / رد</span><span class="badge b-page">purchases/view.php</span></span>
+  </div>
+  <p>پس از آماده‌شدن قیمت‌ها، خرید برای تصمیم‌گیری به کمیته ارسال می‌شود. هر عضو کمیته رأی خود را به‌طور مستقل ثبت می‌کند:</p>
+  <ul>
+    <li><b>تصویب:</b> وضعیت خرید «<b>تصویب شده</b>» می‌شود و برای ثبت سفارش نهایی آماده است.</li>
+    <li><b>رد:</b> وضعیت «رد شده» می‌شود؛ مدیر تدارکات نظر کمیته را می‌بیند، می‌تواند قیمت‌گیری را تصحیح/تجدید کند و دوباره به کمیته ارسال نماید.</li>
+  </ul>
+  <p class="small">نام تصمیم‌گیرنده، تصمیم و زمان هر رأی کمیته در تاریخچه خرید ثبت می‌شود.</p>
+</div>
+
+<div class="step">
+  <div class="h"><span class="num">۷</span><span class="ttl">ثبت سفارش نهایی</span>
+    <span class="tags"><span class="badge b-role">مدیر تدارکات</span><span class="badge b-status">تصویب شده ← سفارش داده شده</span><span class="badge b-page">purchases/view.php</span></span>
+  </div>
+  <p>پس از تصویب کمیته، مدیر تدارکات تأمین‌کننده برنده را انتخاب، تاریخ سفارش را تعیین و سفارش نهایی را ثبت می‌کند. وضعیت خرید «<b>سفارش داده شده</b>» می‌شود و کالا وارد مرحله انتظار برای رسیدن می‌گردد.</p>
+  <p class="small">برای خریدهای فوری، این مرحله همان در گام ۴ انجام شده است؛ بنابراین مستقیم به گام ۸ می‌روند.</p>
+</div>
+
+<div class="step">
+  <div class="h"><span class="num">۸</span><span class="ttl">رسید و بازرسی گیت</span>
+    <span class="tags"><span class="badge b-role">امنیت گیت</span><span class="badge b-status">سفارش داده شده ← دریافت در گیت</span><span class="badge b-page">gate/receipts.php</span></span>
+  </div>
+  <p>هنگامی که کالا به گیت می‌رسد، در صف «در انتظار در گیت» ظاهر می‌شود و امنیت گیت چک‌لیست رسمی رسید را تکمیل می‌کند:</p>
+  <ul>
+    <li><b>تعداد دریافت‌شده</b> — مقدار واقعی رسیده.</li>
+    <li><b>وضعیت سالم بودن</b> — سالم یا آسیب‌دیده.</li>
+    <li><b>یادداشت</b> — مثلاً پلمب، تعداد جعبه‌ها و ….</li>
+  </ul>
+  <p>پر کردن چک‌لیست وضعیت خرید را «<b>دریافت شده در گیت</b>» می‌کند و رکورد چک‌لیست در تاریخچه درخواست و خرید محفوظ می‌ماند.</p>
+</div>
+
+<div class="step">
+  <div class="h"><span class="num">۹</span><span class="ttl">تکلیف نهایی: ذخیره در انبار یا تحویل مستقیم به اداره</span>
+    <span class="tags"><span class="badge b-role">مدیر انبار</span><span class="badge b-status">دریافت در گیت ← تکمیل</span><span class="badge b-page">warehouse/disposition.php</span></span>
+  </div>
+  <p>مدیر انبار بعد از دریافت کالا در گیت، یکی از دو گزینه را اجرا می‌کند:</p>
+  <ul>
+    <li><b>ذخیره در انبار:</b> کالا به جدول موجودی انبار اضافه می‌شود (نام، دسته‌بندی، تعداد، واحد، موقعیت، حداقل موجودی و یادداشت). اگر همان کالا قبلاً در انبار باشد، به موجودی قبلی <b>افزوده</b> می‌شود. موجودی انبار افزایش می‌یابد و درخواست/خرید «<b>کامل شده</b>» اعلام می‌گردد.</li>
+    <li><b>تحویل مستقیم به اداره:</b> تحویل با تاریخ و یادداشت گیرنده ثبت شده و یک رکورد مصرف ایجاد می‌شود؛ کالا مستقیماً به اداره درخواست‌کننده تحویل می‌گردد و درخواست/خرید «<b>کامل شده</b>» می‌شود.</li>
+  </ul>
+  <div class="endbox">نقطه پایانی روند: در هر دو حالت، درخواست به وضعیت «کامل شده» رسیده و کالا در دسترس اداره درخواست‌کننده قرار گرفته است.</div>
+</div>
+
+<h2><span class="n">۳</span> وضعیت‌های درخواست در یک نگاه</h2>
+<p>وضعیت درخواست در هر مرحله از روند تغییر می‌کند و در «همه درخواست‌ها» برای کارمند و مدیران قابل مشاهده است:</p>
+<table>
+  <tr><th style="width:32%;">وضعیت</th><th>معنا</th><th>مرحله روند</th></tr>
+  <tr><td>در انتظار بررسی</td><td>ثبت شده و در صف مدیر تدارکات است.</td><td>گام ۱ تا ۲</td></tr>
+  <tr><td>بسته شده (غیرضروری)</td><td>غیرضروری اعلام شد؛ روند خاتمه یافت.</td><td>گام ۲</td></tr>
+  <tr><td>بررسی انبار</td><td>تأیید شده و موجودی در حال بررسی است.</td><td>گام ۳</td></tr>
+  <tr><td>نیاز به خرید</td><td>در انبار موجود نیست؛ فرآیند خرید لازم است.</td><td>گام ۳ تا ۴</td></tr>
+  <tr><td>در حال جمع‌آوری قیمت‌ها</td><td>قیمت‌ها از تأمین‌کنندگان جمع می‌شود.</td><td>گام ۵</td></tr>
+  <tr><td>در انتظار کمیته</td><td>قیمت‌ها آماده و در انتظار تصمیم کمیته است.</td><td>گام ۶</td></tr>
+  <tr><td>تصویب شده</td><td>کمیته تأیید کرد؛ آماده ثبت سفارش.</td><td>گام ۶ تا ۷</td></tr>
+  <tr><td>خریداری / سفارش داده شده</td><td>سفارش نهایی با تأمین‌کننده ثبت شد.</td><td>گام ۷</td></tr>
+  <tr><td>دریافت شده در گیت</td><td>کالا رسید و چک‌لیست گیت تکمیل شد.</td><td>گام ۸</td></tr>
+  <tr><td>کامل شده</td><td>ذخیره در انبار یا تحویل به اداره انجام شد؛ پایان روند.</td><td>گام ۳الف یا ۹</td></tr>
+</table>
+
+<h2><span class="n">۴</span> وضعیت‌های خرید</h2>
+<p>هر «خرید» نیز وضعیت جداگانه دارد و در صفحه «خریدها» پیگیری می‌شود:</p>
+<table>
+  <tr><th style="width:32%;">وضعیت خرید</th><th>معنا</th></tr>
+  <tr><td>پیش‌نویس / جمع‌آوری قیمت‌ها</td><td>سفارش باز شده و قیمت‌ها در حال جمع‌آوری است (خرید عادی).</td></tr>
+  <tr><td>در انتظار کمیته</td><td>قیمت‌ها آماده و برای کمیته ارسال شده است.</td></tr>
+  <tr><td>تصویب شده</td><td>تصمیم کمیته مثبت است.</td></tr>
+  <tr><td>رد شده</td><td>کمیته رد کرده؛ تدارکات می‌تواند قیمت‌گیری را اصلاح و دوباره ارسال کند.</td></tr>
+  <tr><td>سفارش داده شده</td><td>سفارش نهایی با تأمین‌کننده ثبت شد (شامل خرید فوری).</td></tr>
+  <tr><td>دریافت شده در گیت</td><td>کالا در گیت رسید و چک‌لیست امنیت تکمیل شد.</td></tr>
+  <tr><td>کامل شده</td><td>تعیین تکلیف انجام شد (ذخیره در انبار یا تحویل مستقیم).</td></tr>
+</table>
+
+<h2><span class="n">۵</span> نقش‌ها و مسئولیت‌ها</h2>
+<table>
+  <tr><th style="width:22%;">نقش</th><th>مسئولیت‌های اصلی</th></tr>
+  <tr><td>کارمند</td><td>ثبت درخواست مواد/وسایل، پیگیری وضعیت درخواست‌های خود.</td></tr>
+  <tr><td>مدیر تدارکات</td><td>بررسی و تأیید/بستن درخواست‌ها، شروع خرید، جمع‌آوری قیمت‌ها، ارسال به کمیته، ثبت سفارش نهایی، مدیریت تأمین‌کنندگان.</td></tr>
+  <tr><td>مدیر انبار (گدام)</td><td>بررسی موجودی، صدور از انبار، مدیریت اقلام و دسته‌بندی‌ها، تعیین تکلیف خرید (ذخیره یا تحویل مستقیم).</td></tr>
+  <tr><td>امنیت گیت</td><td>اجرای چک‌لیست رسید برای کالاهای ورودی (تعداد و سلامت کالا).</td></tr>
+  <tr><td>عضو کمیته</td><td>تصمیم تأیید یا رد خریدهای «در انتظار کمیته».</td></tr>
+  <tr><td>مدیر عمومی</td><td>مشاهده داشبورد استراتژیک و گزارشات (خرید، مصرف، موجودی، تحلیل هزینه‌ها).</td></tr>
+  <tr><td>مدیر سیستم</td><td>مدیریت کاربران، ادارات و نظارت کامل بر سامانه.</td></tr>
+</table>
+
+<h2><span class="n">۶</span> کنترل، شفافیت و پیگیری</h2>
+<ul>
+  <li><b>تاریخچه کامل:</b> همه تصمیم‌ها ثبت می‌شوند — تأیید/بستن توسط تدارکات، یادداشت انبار، رأی هر عضو کمیته، چک‌لیست گیت و یادداشت تحویل؛ در صفحه جزئیات درخواست و خرید قابل مشاهده است.</li>
+  <li><b>مسئولیت‌پذیری:</b> برای هر اقدام، نام فرد انجام‌دهنده و زمان آن در سیستم ذخیره می‌شود.</li>
+  <li><b>پشتیبانی ضد کمبود:</b> صدور کالا از انبار بدون موجودی کافی ممکن نیست.</li>
+  <li><b>ارز شفاف:</b> همه قیمت‌ها (تخمینی درخواست، پیش‌قیمت‌ها و سفارش) با واحد پول مشخص AFN یا USD ثبت می‌شوند.</li>
+  <li><b>گزارش‌ها و داشبوردها:</b> گزارش خرید، مصرف، موجودی و تحلیل هزینه‌ها برای مدیران و مدیر عمومی در دسترس است.</li>
+  <li><b>بایگانی:</b> درخواست‌های بسته و کامل شده محفوظ می‌مانند و هر زمان قابل رجوع هستند.</li>
+</ul>
+
+<div class="pagebreak"></div>
+<h2><span class="n">۷</span> ضمیمه — صفحه‌های کلیدی سیستم</h2>
+<p>برای مراجعه سریع، نقشه صفحه‌های اصلی سامانه به تفکیک نقش:</p>
+<table>
+  <tr><th style="width:24%;">نقش</th><th>صفحه/کارکرد</th><th>آدرس فایل</th></tr>
+  <tr><td>کارمند</td><td>ثبت درخواست جدید</td><td><span class="path">requests/create.php</span></td></tr>
+  <tr><td>کارمند / همه</td><td>لیست و پیگیری درخواست‌ها</td><td><span class="path">requests/list.php</span></td></tr>
+  <tr><td>مدیر تدارکات</td><td>بررسی و تأیید/بستن درخواست</td><td><span class="path">requests/review.php</span></td></tr>
+  <tr><td>مدیر انبار</td><td>بررسی موجودی و صدور</td><td><span class="path">warehouse/check.php</span></td></tr>
+  <tr><td>مدیر تدارکات</td><td>ایجاد خرید (عادی/فوری)</td><td><span class="path">purchases/create.php</span></td></tr>
+  <tr><td>تدارکات / کمیته</td><td>جمع‌آوری قیمت، تصمیم کمیته، سفارش</td><td><span class="path">purchases/view.php</span></td></tr>
+  <tr><td>امنیت گیت</td><td>چک‌لیست رسید کالا</td><td><span class="path">gate/receipts.php</span></td></tr>
+  <tr><td>مدیر انبار</td><td>ذخیره در انبار یا تحویل مستقیم</td><td><span class="path">warehouse/disposition.php</span></td></tr>
+  <tr><td>مدیر انبار</td><td>مدیریت موجودی و اقلام</td><td><span class="path">warehouse/inventory.php</span></td></tr>
+  <tr><td>مدیران</td><td>گزارش خرید، مصرف، تحلیل هزینه‌ها</td><td><span class="path">reports/</span></td></tr>
+</table>
+
+<div class="note" style="margin-top:14px;"><b>نتیجه‌گیری برای جلسه:</b> سامانه مسیر درخواست مواد/وسایل را از ثبت تا تحویل نهایی به شکل استاندارد، مستند و قابل پیگیری اجرا می‌کند. هر مرحله دارای <b>مسئول مشخص</b>، <b>وضعیت قابل مشاهده</b> و <b>ثبت الکترونیکی</b> است؛ از صدور مستقیم از انبار تا خرید، تصمیم کمیته و رسید گیت — و در نهایت کالا به صورت <b>ذخیره در انبار</b> یا <b>تحویل مستقیم به اداره</b> به دست درخواست‌کننده می‌رسد و درخواست به‌طور رسمی «کامل شده» اعلام می‌گردد.</div>
+
+<p class="small" style="color:#5a6b82;margin-top:16px;border-top:1px solid #dde4ee;padding-top:8px;">
+این سند بر اساس کد و رفتار واقعی سامانه (PWMS) تهیه شده است. — شرکت انکشافی خاور — برای پرسش‌های بیشتر با مدیر سیستم تماس بگیرید.
+</p>
+</body>
+</html>

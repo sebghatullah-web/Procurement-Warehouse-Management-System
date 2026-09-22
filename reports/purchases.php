@@ -50,7 +50,7 @@ require_once __DIR__ . '/../includes/header.php';
       </select></div>
     <div class="col-auto pt-3"><button class="btn btn-primary btn-sm" type="submit">فیلتر</button></div>
     <div class="col-auto pt-3"><a class="btn btn-outline-secondary btn-sm" href="<?php echo $base; ?>/reports/purchases.php">بازنشانی</a></div>
-    <div class="col-auto pt-3"><strong>مجموع: <?php echo money0($total); ?> PKR</strong></div>
+    <div class="col-auto pt-3"><strong>مجموع (AFN): <?php echo money0($total); ?></strong></div>
   </form>
 </div>
 
@@ -71,8 +71,8 @@ require_once __DIR__ . '/../includes/header.php';
           <td class="text-muted small"><?php echo h($p['dept']); ?></td>
           <td><?php echo h($p['supplier'] ?? '—'); ?></td>
           <td><?php echo xnum($p['quantity']); ?></td>
-          <td class="text-nowrap"><?php echo money0($p['unit_price']); ?></td>
-          <td class="text-nowrap fw-semibold"><?php echo money0($p['total_cost']); ?></td>
+          <td class="text-nowrap"><?php echo money_cur($p['unit_price'], $p['currency'] ?? 'AFN'); ?></td>
+          <td class="text-nowrap fw-semibold"><?php echo money_cur($p['total_cost'], $p['currency'] ?? 'AFN'); ?></td>
           <td><?php echo badge($p['status']); ?></td>
           <td class="text-muted small text-nowrap"><?php echo h($p['purchase_date'] ?? '—'); ?></td>
         </tr>
