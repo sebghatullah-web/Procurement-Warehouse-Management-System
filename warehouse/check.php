@@ -76,8 +76,14 @@ require_once __DIR__ . '/../includes/header.php';
       <div class="col-md-3"><strong>اداره</strong><br><?php echo h($r['dept']); ?></div>
       <div class="col-md-4"><strong>کالا</strong><br><?php echo h($r['item_name']); ?></div>
       <div class="col-md-2"><strong>لازم</strong><br><?php echo h($r['quantity']); ?> <?php echo h(unit_label($r['unit'])); ?></div>
-      <div class="col-md-3"><strong>فوریت</strong><br><?php echo badge($r['urgency']); ?></div>
+      <div class="col-md-2"><strong>فوریت</strong><br><?php echo badge($r['urgency']); ?></div>
+      <div class="col-md-2 mt-1"><strong>تاریخ مورد نیاز</strong><br><?php echo h($r['needed_date'] ?? '—'); ?></div>
+      <div class="col-md-2 mt-1"><strong>کارمند</strong><br><?php echo h($r['employee_name'] ?? '—'); ?></div>
+      <div class="col-md-2 mt-1"><strong>موقعیت وظیفه‌ای</strong><br><?php echo h($r['employee_position'] ?? '—'); ?></div>
     </div>
+    <?php if (isset($r['details']) && $r['details'] !== ''): ?>
+    <div class="small text-muted mt-2"><strong>جزئیات کالا:</strong> <?php echo h($r['details']); ?></div>
+    <?php endif; ?>
     <?php if (count($errors) > 0): ?>
       <div class="alert alert-danger mt-2 py-2"><?php foreach ($errors as $e): ?><div><?php echo h($e); ?></div><?php endforeach; ?></div>
     <?php endif; ?>

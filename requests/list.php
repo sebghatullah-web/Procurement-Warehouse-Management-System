@@ -90,7 +90,7 @@ require_once __DIR__ . '/../includes/header.php';
   <div class="table-responsive">
     <table class="table table-hover align-middle mb-0" id="mainTable">
       <thead>
-        <tr><th>شماره درخواست</th><th>تاریخ</th><th>تاریخ مورد نیاز</th><th>اداره</th><th>کالا</th><th>دسته‌بندی</th><th>مقدار</th><th>فوریت</th><th>وضعیت</th><th></th></tr>
+        <tr><th>شماره درخواست</th><th>تاریخ</th><th>تاریخ مورد نیاز</th><th>اداره</th><th>کالا</th><th>دسته‌بندی</th><th>مقدار</th><th>کارمند (موقعیت)</th><th>فوریت</th><th>وضعیت</th><th></th></tr>
       </thead>
       <tbody>
       <?php foreach ($rows as $r): ?>
@@ -102,13 +102,14 @@ require_once __DIR__ . '/../includes/header.php';
           <td><?php echo h($r['item_name']); ?></td>
           <td class="text-muted small"><?php echo h($r['cat'] ?? '-'); ?></td>
           <td class="text-nowrap"><?php echo h($r['quantity']); ?> <?php echo h(unit_label($r['unit'])); ?></td>
+          <td><?php echo h($r['employee_name'] ?? $r['requester']); ?><?php if ($r['employee_position'] && $r['employee_position'] !== '—'): ?> <span class="text-muted small">(<?php echo h($r['employee_position']); ?>)</span><?php endif; ?></td>
           <td><?php echo badge($r['urgency']); ?></td>
           <td><?php echo badge($r['status']); ?></td>
           <td><a class="btn btn-sm btn-outline-primary" href="<?php echo $base; ?>/requests/view.php?id=<?php echo $r['id']; ?>">باز کردن</a></td>
         </tr>
       <?php endforeach; ?>
       <?php if (count($rows) === 0): ?>
-        <tr><td colspan="10" class="text-center text-muted py-4">درخواستی یافت نشد.</td></tr>
+        <tr><td colspan="11" class="text-center text-muted py-4">درخواستی یافت نشد.</td></tr>
       <?php endif; ?>
       </tbody>
     </table>

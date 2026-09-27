@@ -54,7 +54,7 @@ require_once __DIR__ . '/../includes/header.php';
   <div class="table-responsive">
     <table class="table table-hover align-middle mb-0">
       <thead>
-        <tr><th>شماره سفارش</th><th>درخواست</th><th>کالا</th><th>اداره</th><th>تأمین‌کننده</th><th>تعداد</th><th>مجموع (PKR)</th><th>وضعیت</th><th>تاریخ</th><th></th></tr>
+        <tr><th>شماره سفارش</th><th>درخواست</th><th>کالا</th><th>اداره</th><th>تأمین‌کننده</th><th>تعداد</th><th>مجموع</th><th>ارز</th><th>وضعیت</th><th>تاریخ</th><th></th></tr>
       </thead>
       <tbody>
       <?php foreach ($rows as $p): ?>
@@ -65,7 +65,8 @@ require_once __DIR__ . '/../includes/header.php';
           <td class="text-muted small"><?php echo h($p['dept']); ?></td>
           <td><?php echo h($p['supplier'] ?? '—'); ?></td>
           <td><?php echo xnum($p['quantity']); ?></td>
-          <td class="text-nowrap"><?php echo money0($p['total_cost']); ?></td>
+          <td class="text-nowrap"><?php echo money_cur($p['total_cost'], $p['currency']); ?></td>
+          <td><?php echo cur_label($p['currency']); ?></td>
           <td><?php echo badge($p['status']); ?></td>
           <td class="text-muted small text-nowrap"><?php echo h($p['purchase_date'] ?? '—'); ?></td>
           <td><a class="btn btn-sm btn-outline-primary" href="view.php?id=<?php echo $p['id']; ?>">باز کردن</a></td>

@@ -35,7 +35,7 @@ if ($role === 'employee') {
         ['در انتظار بررسی',           (string)$s['review_pending'], 'bi-check2-circle', 'bg-primary'],
         ['فرآیند خرید فعال',           (string)$s['buying'],         'bi-cart-check',    'bg-warning text-dark'],
         ['در انتظار کمیته',            (string)$s['cm_pending'],     'bi-people',        'bg-danger'],
-        ['هزینه این ماه (PKR)',        money0($s['spend_m']),        'bi-currency-dollar','bg-success'],
+        ['هزینه این ماه (؋)',        money0($s['spend_m']),        'bi-currency-dollar','bg-success'],
     ];
 } elseif ($role === 'warehouse_manager') {
     $s = fetch_one("SELECT
@@ -65,7 +65,7 @@ if ($role === 'employee') {
     $cards = [
         ['در انتظار تأیید من',        (string)$s['pending_cm'], 'bi-people',          'bg-warning text-dark'],
         ['خریدهای تصویب‌شده',          (string)$s['approved_cm'], 'bi-check2-circle',   'bg-success'],
-        ['در خط فرآیند (PKR)',         money0($s['pipeline']),   'bi-graph-up',        'bg-info text-dark'],
+        ['در خط فرآیند (؋)',         money0($s['pipeline']),   'bi-graph-up',        'bg-info text-dark'],
     ];
 } else { /* general_manager + admin */
     $s = fetch_one("SELECT
@@ -78,7 +78,7 @@ if ($role === 'employee') {
     $cards = [
         ['مجموع درخواست‌ها',           (string)$s['total_req'],  'bi-inboxes',         'bg-primary'],
         ['خریدهای امسال',              (string)$s['year_pur'],   'bi-cart-check',      'bg-info text-dark'],
-        ['هزینه امسال (PKR)',          money0($s['year_spend']), 'bi-currency-dollar', 'bg-success'],
+        ['هزینه امسال (؋)',          money0($s['year_spend']), 'bi-currency-dollar', 'bg-success'],
         ['اقلام انبار',                (string)$s['items'],      'bi-boxes',           'bg-warning text-dark'],
     ];
 }

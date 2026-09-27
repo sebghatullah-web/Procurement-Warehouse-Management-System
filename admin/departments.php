@@ -21,7 +21,7 @@ if (is_post()) {
             $fields = "name='" . esc($name) . "', code='" . esc($code) . "'";
             if ($desc) $fields .= ", description='" . esc($desc) . "'";
             $ok = ($action === 'add')
-                ? exec_sql("INSERT INTO departments ($fields)")
+                ? exec_sql("INSERT INTO departments SET $fields")
                 : exec_sql("UPDATE departments SET $fields WHERE id=$deptId");
             if ($ok) {
                 flash_set('success', 'اداره ذخیره شد: ' . $name);
@@ -71,7 +71,7 @@ require_once __DIR__ . '/../includes/header.php';
           <?php if ($edit): ?><input type="hidden" name="department_id" value="<?php echo $edit['id']; ?>"><?php endif; ?>
           <div class="mb-2"><label class="form-label required">نام اداره</label>
             <input type="text" name="name" class="form-control" required value="<?php echo h($edit ? $edit['name'] : ($_POST['name'] ?? '')); ?>"></div>
-          <div class="mb-2"><label class="form-label required">کد</label>
+          <div class="mb-2"><label class="form-label required">اداره</label>
             <input type="text" name="code" class="form-control" required placeholder="e.g. SITE, HQ" value="<?php echo h($edit ? $edit['code'] : ($_POST['code'] ?? '')); ?>"></div>
           <div class="mb-2"><label class="form-label">توضیحات</label>
             <textarea name="description" rows="2" class="form-control"><?php echo h($edit ? ($edit['description'] ?? '') : ($_POST['description'] ?? '')); ?></textarea></div>
@@ -89,7 +89,7 @@ require_once __DIR__ . '/../includes/header.php';
           <tbody>
           <?php foreach ($rows as $d): ?>
             <tr>
-              <td class="text-muted small"><?php echo h($d['code']); ?></td>
+              <td class="text-muted small"><?php $dcode = trim($d['code'] ?? ''); echo h($dcode !== '' ? $dcode : '—'); ?></td>
               <td><?php echo h($d['name']); ?></td>
               <td class="text-muted small"><?php echo h($d['description'] ?? '—'); ?></td>
               <td class="table-actions text-end">

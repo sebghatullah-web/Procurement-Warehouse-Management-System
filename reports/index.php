@@ -27,11 +27,11 @@ require_once __DIR__ . '/../includes/header.php';
   <div class="col-md-3"><div class="card h-100"><div class="card-body">
     <div class="text-muted small">هزینه این ماه</div>
     <div class="fs-3 fw-bold"><?php echo money0($monthSpend['m']); ?></div>
-    <div class="small text-muted">PKR</div></div></div></div>
+    <div class="small text-muted">افغانی (؋) / دالر ($)</div></div></div></div>
   <div class="col-md-3"><div class="card h-100"><div class="card-body">
     <div class="text-muted small">هزینه امسال</div>
     <div class="fs-3 fw-bold"><?php echo money0($yearSpend['y']); ?></div>
-    <div class="small text-muted">PKR</div></div></div></div>
+    <div class="small text-muted">افغانی (؋) / دالر ($)</div></div></div></div>
   <div class="col-md-3"><div class="card h-100"><div class="card-body">
     <div class="text-muted small">تحویل داده شده این ماه</div>
     <div class="fs-3 fw-bold"><?php echo xnum($monthIssued['q']); ?></div>

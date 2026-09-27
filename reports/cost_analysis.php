@@ -67,7 +67,7 @@ require_once __DIR__ . '/../includes/header.php';
       </select></div>
     <div class="col-auto pt-3"><button class="btn btn-primary btn-sm" type="submit">فیلتر</button></div>
     <div class="col-auto pt-3"><a class="btn btn-outline-secondary btn-sm" href="<?php echo $base; ?>/reports/cost_analysis.php">بازنشانی</a></div>
-    <div class="col-auto pt-3"><strong>مجموع: <?php echo money0($total); ?> PKR</strong></div>
+    <div class="col-auto pt-3"><strong>مجموع (؋/$): <?php echo money0($total); ?></strong></div>
   </form>
 </div>
 <div class="row g-3 mb-3">
@@ -76,7 +76,7 @@ require_once __DIR__ . '/../includes/header.php';
       <div class="card-header">به تفکیک اداره</div>
       <div class="table-responsive">
         <table class="table table-sm align-middle mb-0">
-          <thead><tr><th>اداره</th><th>هزینه (PKR)</th></tr></thead>
+          <thead><tr><th>اداره</th><th>هزینه (؋/$)</th></tr></thead>
           <tbody>
           <?php foreach ($byDept as $dept => $spend): ?>
             <tr><td><?php echo h($dept); ?></td><td class="text-nowrap"><?php echo money0($spend); ?></td></tr>
@@ -94,7 +94,7 @@ require_once __DIR__ . '/../includes/header.php';
       <div class="card-header">به تفکیک دسته‌بندی</div>
       <div class="table-responsive">
         <table class="table table-sm align-middle mb-0">
-          <thead><tr><th>دسته‌بندی</th><th>هزینه (PKR)</th></tr></thead>
+          <thead><tr><th>دسته‌بندی</th><th>هزینه (؋/$)</th></tr></thead>
           <tbody>
           <?php foreach ($byCat as $key => $spend): ?>
             <?php $parts = explode('|', $key, 2); $catName = $parts[1] ?? '—'; ?>
@@ -128,8 +128,8 @@ require_once __DIR__ . '/../includes/header.php';
           <td><?php echo h($p['item_name']); ?></td>
           <td><?php echo h($p['supplier'] ?? '—'); ?></td>
           <td><?php echo xnum($p['quantity']); ?></td>
-          <td class="text-nowrap"><?php echo money0($p['unit_price']); ?></td>
-          <td class="text-nowrap fw-semibold"><?php echo money0($p['total_cost']); ?></td>
+          <td class="text-nowrap"><?php echo money_cur($p['unit_price'], $p['currency']); ?></td>
+          <td class="text-nowrap fw-semibold"><?php echo money_cur($p['total_cost'], $p['currency']); ?></td>
           <td class="text-muted small text-nowrap"><?php echo h($p['purchase_date'] ?? '—'); ?></td>
         </tr>
       <?php endforeach; ?>

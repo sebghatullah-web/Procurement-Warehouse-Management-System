@@ -52,11 +52,17 @@ require_once __DIR__ . '/../includes/header.php';
       <div class="col-md-3"><strong>کالا</strong><br><?php echo h($r['item_name']); ?></div>
       <div class="col-md-2"><strong>تعداد</strong><br><?php echo h($r['quantity']); ?> <?php echo h(unit_label($r['unit'])); ?></div>
       <div class="col-md-2"><strong>فوریت</strong><br><?php echo badge($r['urgency']); ?></div>
-      <div class="col-md-2"><strong>درخواست‌کننده</strong><br><?php echo h($r['requester']); ?></div>
+      <div class="col-md-2"><strong>کارمند</strong><br><?php echo h($r['employee_name'] ?? $r['requester']); ?></div>
     </div>
     <div class="small text-muted mb-3">
       <strong>دلیل:</strong> <?php echo h($r['reason'] ?? '—'); ?><br>
       <strong>تحویل مستقیم:</strong> <?php echo $r['direct_delivery'] ? 'بله' : 'خیر'; ?>
+      <?php if ($r['employee_position']): ?><br><strong>موقعیت وظیفه‌ای:</strong> <?php echo h($r['employee_position']); ?><?php endif; ?>
+      <?php if ($r['needed_date']): ?><br><strong>تاریخ مورد نیاز:</strong> <?php echo h($r['needed_date']); ?><?php endif; ?>
+      <?php if (isset($r['details']) && $r['details'] !== ''): ?>
+        <br><strong>جزئیات کالا:</strong><br>
+        <div class="border rounded-2 p-2 mt-1 bg-light-subtle"><?php echo h($r['details']); ?></div>
+      <?php endif; ?>
     </div>
 
     <?php if (count($errors) > 0): ?>

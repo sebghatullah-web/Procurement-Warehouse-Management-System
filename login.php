@@ -46,7 +46,7 @@ if (is_post()) {
       <div class="text-center mb-3">
         <i class="bi bi-box-seam" style="font-size:2.6rem;color:#e9a13c;"></i>
         <h4 class="mb-1"><?php echo APP_NAME; ?></h4>
-        <div class="text-muted small">شرکت انکشافی خاور &middot; افغانستان</div>
+        <div class="text-muted small">شرکت ساختمانی خاور &middot; افغانستان</div>
       </div>
       <?php if ($err !== ''): ?>
       <div class="alert alert-danger py-2"><i class="bi bi-exclamation-triangle me-2"></i><?php echo h($err); ?></div>
@@ -83,9 +83,6 @@ if (is_post()) {
       </div>
     </div>
   </div>
-  <p class="text-center text-light small mt-3">
-    نصب جدید؟ ابتدا <a class="text-warning" href="<?php echo $base; ?>/install.php">نصب‌کننده یک‌کلیکی</a> را اجرا کنید.
-  </p>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

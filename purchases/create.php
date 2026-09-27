@@ -35,6 +35,8 @@ if (is_post()) {
     if ($mode === 'urgent') {
         $supplier_id = (int)($_POST['supplier_id'] ?? 0);
         $price  = (float)($_POST['unit_price'] ?? 0);
+        $cur    = trim($_POST['currency'] ?? 'AFN');
+        if ($cur !== 'USD') { $cur = 'AFN'; }
         $pdate  = trim($_POST['purchase_date'] ?? today());
         $pay    = ($_POST['payment_status'] ?? 'pending') === 'paid' ? 'paid' : 'pending';
         $note   = trim($_POST['announcement_note'] ?? '');
@@ -44,9 +46,9 @@ if (is_post()) {
         if ($pdate === '')       { $pdate = today(); }
         if (count($errors) === 0) {
             $ok = exec_sql("INSERT INTO purchases
-                    (purchase_no, request_id, supplier_id, quantity, unit_price, total_cost, purchase_date,
+                    (purchase_no, request_id, supplier_id, quantity, unit_price, total_cost, currency, purchase_date,
                      urgency, payment_status, status, approved_by, announcement_note)
-                    VALUES ('" . esc($purchase_no) . "', $rid, $supplier_id, $qty, $price, $total, '$pdate',
+                    VALUES ('" . esc($purchase_no) . "', $rid, $supplier_id, $qty, $price, $total, '$cur', '$pdate',
                             'urgent', '$pay', 'ordered', " . (int)$user['id'] . ", '" . esc($note) . "')");
             if ($ok) {
                 exec_sql("UPDATE procurement_requests SET status='purchased' WHERE id=$rid");
@@ -109,8 +111,13 @@ require_once __DIR__ . '/../includes/header.php';
                 <option value="<?php echo $s['id']; ?>"><?php echo h($s['name']); ?></option>
                 <?php endforeach; ?>
               </select></div>
-            <div class="col-md-6"><label class="form-label required">قیمت واحد (PKR)</label>
+            <div class="col-md-4"><label class="form-label required">قیمت واحد</label>
               <input type="number" name="unit_price" min="0.01" step="any" class="form-control" required></div>
+            <div class="col-md-2"><label class="form-label required">ارز</label>
+              <select name="currency" class="form-select">
+                <option value="AFN">افغانی (؋)</option>
+                <option value="USD">دالر ($)</option>
+              </select></div>
             <div class="col-md-6"><label class="form-label required">تاریخ خرید</label>
               <input type="date" name="purchase_date" class="form-control" required value="<?php echo today(); ?>"></div>
             <div class="col-md-6"><label class="form-label">پرداخت</label>

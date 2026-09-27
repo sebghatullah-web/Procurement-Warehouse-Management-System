@@ -108,6 +108,26 @@ function xnum($n)
     return number_format($v, $v === floor($v) ? 0 : 2);
 }
 
+/**
+ * Format an amount together with its currency symbol.
+ * AFN -> "۱۲۳۴۵ ؋"   USD -> "$۱۲۳۴۵"
+ */
+function money_cur($n, $cur)
+{
+    $s = money0($n);
+    if (strtoupper((string)($cur ?? 'AFN')) === 'USD') { return '$' . $s; }
+    return $s . ' ؋';
+}
+
+/** Human label for a currency code. */
+function cur_label($c)
+{
+    $c = strtoupper((string)($c ?? 'AFN'));
+    if ($c === 'USD') { return 'دالر ($)'; }
+    if ($c === 'AFN') { return 'افغانی (؋)'; }
+    return h($c);
+}
+
 function today()
 {
     return date('Y-m-d');

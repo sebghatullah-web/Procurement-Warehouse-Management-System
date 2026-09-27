@@ -5,7 +5,7 @@ $pending = fetch_all("SELECT r.id, r.request_no, d.name dept, r.item_name, r.qua
 $buying  = fetch_all("SELECT r.id, r.request_no, d.name dept, r.item_name, r.status FROM procurement_requests r
   JOIN departments d ON d.id=r.department_id
   WHERE r.status IN ('purchase_required','quotation_pending') ORDER BY r.id DESC LIMIT 6");
-$recentPur = fetch_all("SELECT p.id, p.purchase_no, p.request_id, s.name supplier, p.total_cost, p.status, p.purchase_date
+$recentPur = fetch_all("SELECT p.id, p.purchase_no, p.request_id, s.name supplier, p.total_cost, p.currency, p.status, p.purchase_date
   FROM purchases p LEFT JOIN suppliers s ON s.id=p.supplier_id ORDER BY p.id DESC LIMIT 6");
 ?>
 <div class="row g-3 mb-3">
@@ -48,13 +48,13 @@ $recentPur = fetch_all("SELECT p.id, p.purchase_no, p.request_id, s.name supplie
     <a class="small" href="<?php echo $base; ?>/purchases/list.php">همه خریدها &larr;</a>
   </div>
   <div class="table-responsive"><table class="table table-sm table-hover align-middle mb-0">
-    <thead><tr><th>شماره سفارش</th><th>درخواست</th><th>تأمین‌کننده</th><th>مجموع (PKR)</th><th>وضعیت</th><th>تاریخ</th></tr></thead>
+    <thead><tr><th>شماره سفارش</th><th>درخواست</th><th>تأمین‌کننده</th><th>مجموع</th><th>وضعیت</th><th>تاریخ</th></tr></thead>
     <tbody>
     <?php foreach ($recentPur as $p): ?>
       <tr><td><a href="<?php echo $base; ?>/purchases/view.php?id=<?php echo $p['id']; ?>"><?php echo h($p['purchase_no']); ?></a></td>
           <td><a href="<?php echo $base; ?>/requests/view.php?id=<?php echo $p['request_id']; ?>">#<?php echo $p['request_id']; ?></a></td>
           <td><?php echo h($p['supplier'] ?? '-'); ?></td>
-          <td class="text-nowrap"><?php echo money0($p['total_cost']); ?></td>
+          <td class="text-nowrap"><?php echo money_cur($p['total_cost'], $p['currency']); ?></td>
           <td><?php echo badge($p['status']); ?></td>
           <td class="text-muted small text-nowrap"><?php echo h($p['purchase_date'] ?? ''); ?></td></tr>
     <?php endforeach; ?>
