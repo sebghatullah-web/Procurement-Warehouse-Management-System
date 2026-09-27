@@ -33,16 +33,17 @@ $to  = trim($_GET['to_date'] ?? '');
 if ($frm !== '') { $where[] = "r.request_date >= '" . esc($frm) . "'"; }
 if ($to  !== '') { $where[] = "r.request_date <= '" . esc($to) . "'"; }
 
-$sql = "SELECT r.*, d.name dept, c.name cat, u.name requester
+$sql = "SELECT r.*, d.name dept, pd.name branch, c.name cat, u.name requester
         FROM procurement_requests r
         JOIN departments d ON d.id = r.department_id
+        LEFT JOIN departments pd ON pd.id = d.parent_id
         LEFT JOIN categories c ON c.id = r.category_id
         LEFT JOIN users u ON u.id = r.requested_by";
 if (count($where)) { $sql .= ' WHERE ' . implode(' AND ', $where); }
 $sql .= ' ORDER BY r.id DESC';
 
 $rows = fetch_all($sql);
-$depts = fetch_all('SELECT id, name FROM departments ORDER BY name');
+$depts = fetch_all('SELECT id, name FROM departments WHERE parent_id IS NOT NULL ORDER BY name');
 
 require_once __DIR__ . '/../includes/header.php';
 ?>
@@ -98,11 +99,12 @@ require_once __DIR__ . '/../includes/header.php';
           <td><a href="<?php echo $base; ?>/requests/view.php?id=<?php echo $r['id']; ?>"><?php echo h($r['request_no']); ?></a></td>
           <td class="text-muted small text-nowrap"><?php echo h($r['request_date']); ?></td>
           <td class="text-muted small text-nowrap"><?php echo h($r['needed_date'] ?? '—'); ?></td>
-          <td><?php echo h($r['dept']); ?></td>
+          <td><?php if ($r['branch']): ?><span class="text-muted small"><?php echo h($r['branch']); ?> / </span><?php endif; ?><?php echo h($r['dept']); ?></td>
           <td><?php echo h($r['item_name']); ?></td>
           <td class="text-muted small"><?php echo h($r['cat'] ?? '-'); ?></td>
           <td class="text-nowrap"><?php echo h($r['quantity']); ?> <?php echo h(unit_label($r['unit'])); ?></td>
-          <td><?php echo h($r['employee_name'] ?? $r['requester']); ?><?php if ($r['employee_position'] && $r['employee_position'] !== '—'): ?> <span class="text-muted small">(<?php echo h($r['employee_position']); ?>)</span><?php endif; ?></td>
+          <?php $empName = trim($r['employee_name'] ?? ''); $empName = $empName !== '' ? $empName : $r['requester']; ?>
+          <td><?php echo h($empName); ?><?php if (trim($r['employee_position'] ?? '') !== ''): ?> <span class="text-muted small">(<?php echo h($r['employee_position']); ?>)</span><?php endif; ?></td>
           <td><?php echo badge($r['urgency']); ?></td>
           <td><?php echo badge($r['status']); ?></td>
           <td><a class="btn btn-sm btn-outline-primary" href="<?php echo $base; ?>/requests/view.php?id=<?php echo $r['id']; ?>">باز کردن</a></td>

@@ -33,7 +33,7 @@ $sql = "SELECT w.*, c.name cat FROM warehouse_items w LEFT JOIN categories c ON 
 if (count($where)) { $sql .= ' WHERE ' . implode(' AND ', $where); }
 $sql .= ' ORDER BY w.name';
 $rows = fetch_all($sql);
-$cats = fetch_all('SELECT id, name FROM categories ORDER BY name');
+$cats = fetch_all('SELECT id, name FROM categories WHERE parent_id IS NOT NULL ORDER BY name');
 
 require_once __DIR__ . '/../includes/header.php';
 ?>

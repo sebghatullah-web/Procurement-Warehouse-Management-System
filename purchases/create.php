@@ -27,10 +27,7 @@ $suppliers = fetch_all('SELECT id, name FROM suppliers ORDER BY name');
 if (is_post()) {
     $mode = $_POST['mode'] ?? '';
     $qty  = qty_num($r['quantity']);
-    $prefix = 'PUR-' . date('Y') . '-';
-    $last = fetch_one("SELECT purchase_no FROM purchases WHERE purchase_no LIKE '$prefix%' ORDER BY purchase_no DESC LIMIT 1");
-    $n = $last ? (int)substr($last['purchase_no'], strlen($prefix)) + 1 : 1;
-    $purchase_no = $prefix . str_pad($n, 4, '0', STR_PAD_LEFT);
+    $purchase_no = next_purchase_no();
 
     if ($mode === 'urgent') {
         $supplier_id = (int)($_POST['supplier_id'] ?? 0);
@@ -142,7 +139,10 @@ require_once __DIR__ . '/../includes/header.php';
         <ul class="mb-2">
           <li>از <strong>حداقل 3 تأمین‌کننده</strong> قیمت بگیرید</li>
           <li>برای کمیته ارسال کنید (مالی + مدیریت + تدارکات)</li>
-          <li>پس از تأیید، تأمین‌کننده نهایی را انتخاب و سفارش ثبت کنید</li>
+          <li>پس از تصویب کمیته: <strong>شرکت و قیمت نهایی</strong> را انتخاب کنید</li>
+          <li>سپس <strong>تصویب ریاست شرکت / رئیس اجرائیه</strong></li>
+          <li>بعد <strong>تسلیمی هزینه از مالی</strong> (چک بانکی / نقد / ...)</li>
+          <li>و در آخر <strong>ثبت سفارش</strong> توسط خریداری</li>
         </ul>
         <form method="post">
           <input type="hidden" name="mode" value="normal">

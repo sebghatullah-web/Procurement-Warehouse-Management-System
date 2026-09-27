@@ -22,15 +22,20 @@ if (is_post()) {
     if ($action === 'add' || $action === 'update') {
         if ($name === '') { $errors[] = 'نام تأمین‌کننده الزامی است.'; }
         elseif (count($errors) === 0) {
-            $fields = "name='" . esc($name) . "'";
-            if ($cp)    $fields .= ", contact_person='" . esc($cp) . "'";
-            if ($phone) $fields .= ", phone='" . esc($phone) . "'";
-            if ($email) $fields .= ", email='" . esc($email) . "'";
-            if ($addr)  $fields .= ", address='" . esc($addr) . "'";
-            if ($notes) $fields .= ", notes='" . esc($notes) . "'";
-            $ok = ($action === 'add')
-                ? exec_sql("INSERT INTO suppliers ($fields)")
-                : exec_sql("UPDATE suppliers SET $fields WHERE id=$id");
+            $cols = ['name'];
+            $vals = [esc($name)];
+            if ($cp)    { $cols[] = 'contact_person'; $vals[] = esc($cp); }
+            if ($phone) { $cols[] = 'phone';          $vals[] = esc($phone); }
+            if ($email) { $cols[] = 'email';          $vals[] = esc($email); }
+            if ($addr)  { $cols[] = 'address';        $vals[] = esc($addr); }
+            if ($notes) { $cols[] = 'notes';          $vals[] = esc($notes); }
+            if ($action === 'add') {
+                $ok = exec_sql("INSERT INTO suppliers (" . implode(',', $cols) . ") VALUES ('" . implode("','", $vals) . "')");
+            } else {
+                $pairs = [];
+                foreach ($cols as $i => $c) { $pairs[] = $c . "='" . $vals[$i] . "'"; }
+                $ok = exec_sql("UPDATE suppliers SET " . implode(',', $pairs) . " WHERE id=$id");
+            }
             if ($ok) {
                 flash_set('success', 'تأمین‌کننده ذخیره شد: ' . $name);
                 redirect_to($base . '/suppliers/list.php');

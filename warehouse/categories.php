@@ -17,13 +17,17 @@ if (is_post()) {
     $action = $old['action'] ?? '';
     $name   = trim($old['name'] ?? '');
     $desc   = trim($old['description'] ?? '');
+    $parent = (int)($old['parent_id'] ?? 0);
     if ($action === 'add' || $action === 'update') {
         if ($name === '') { $errors[] = 'نام دسته‌بندی الزامی است.'; }
+        elseif ($id > 0 && $parent === $id) { $errors[] = 'یک دسته‌بندی نمی‌تواند والد خودش باشد.'; }
         elseif (count($errors) === 0) {
-            $descSql = $desc === '' ? 'NULL' : "'" . esc($desc) . "'";
+            $descSql   = $desc === '' ? 'NULL' : "'" . esc($desc) . "'";
+            $parentSql = $parent > 0 ? (string)$parent : 'NULL';
             $ok = ($action === 'add')
-                ? exec_sql("INSERT INTO categories (name, description) VALUES ('" . esc($name) . "', $descSql)")
-                : exec_sql("UPDATE categories SET name='" . esc($name) . "', description=$descSql WHERE id=$id");
+                ? exec_sql("INSERT INTO categories (name, description, parent_id)
+                            VALUES ('" . esc($name) . "', $descSql, $parentSql)")
+                : exec_sql("UPDATE categories SET name='" . esc($name) . "', description=$descSql, parent_id=$parentSql WHERE id=$id");
             if ($ok) {
                 flash_set('success', 'دسته‌بندی ذخیره شد: ' . $name);
                 redirect_to($base . '/warehouse/categories.php');
@@ -33,8 +37,11 @@ if (is_post()) {
     } elseif ($action === 'delete') {
         $delId = (int)($old['del_id'] ?? 0);
         if ($delId > 0) {
+            $kids = fetch_one("SELECT COUNT(*) n FROM categories WHERE parent_id=$delId");
             $used = fetch_one("SELECT COUNT(*) n FROM warehouse_items WHERE category_id=$delId");
-            if ((int)$used['n'] > 0) {
+            if ((int)$kids['n'] > 0) {
+                flash_set('warning', 'حذف ممکن نیست: این گروه ' . (int)$kids['n'] . ' دسته‌بندی زیر مجموعه دارد - اول آن‌ها را نقل یا حذف کنید.');
+            } elseif ((int)$used['n'] > 0) {
                 flash_set('warning', $used['n'] . ' کالای انبار هنوز از این دسته‌بندی استفاده می‌کنند - ابتدا آن‌ها را تغییر دهید.');
             } else {
                 exec_sql("DELETE FROM categories WHERE id=$delId");
@@ -46,8 +53,12 @@ if (is_post()) {
     }
 }
 
-$cats = fetch_all("SELECT c.*, (SELECT COUNT(*) FROM warehouse_items w WHERE w.category_id=c.id) item_count
-                   FROM categories c ORDER BY c.name");
+$groups = fetch_all('SELECT id, name FROM categories WHERE parent_id IS NULL ORDER BY name');
+$cats = fetch_all("SELECT c.*, g.name grp,
+                   (SELECT COUNT(*) FROM warehouse_items w WHERE w.category_id=c.id) item_count
+                   FROM categories c
+                   LEFT JOIN categories g ON g.id = c.parent_id
+                   ORDER BY IF(c.parent_id IS NULL, c.id, c.parent_id), c.parent_id IS NOT NULL, c.name");
 require_once __DIR__ . '/../includes/header.php';
 ?>
 <?php if ($edit): ?>
@@ -70,6 +81,16 @@ require_once __DIR__ . '/../includes/header.php';
             <input type="text" name="name" class="form-control" required value="<?php echo h($edit ? $edit['name'] : ($old['name'] ?? '')); ?>">
           </div>
           <div class="mb-2">
+            <label class="form-label">گروه اصلی (والد)</label>
+            <select name="parent_id" class="form-select">
+              <option value="0">-- بدون والد (گروه اصلی) --</option>
+              <?php foreach ($groups as $g): ?>
+              <option value="<?php echo $g['id']; ?>" <?php echo (int)($edit ? $edit['parent_id'] : ($old['parent_id'] ?? 0)) === (int)$g['id'] ? 'selected' : ''; ?>><?php echo h($g['name']); ?></option>
+              <?php endforeach; ?>
+            </select>
+            <div class="form-text text-muted small">گروه اصلی (مثلاً «مواد و مصالح ساختمانی») را بدون والد ثبت کنید و دسته‌ها را زیر گروه ثبت کنید.</div>
+          </div>
+          <div class="mb-2">
             <label class="form-label">توضیحات</label>
             <input type="text" name="description" class="form-control" value="<?php echo h($edit ? ($edit['description'] ?? '') : ($old['description'] ?? '')); ?>">
           </div>
@@ -83,11 +104,12 @@ require_once __DIR__ . '/../includes/header.php';
       <div class="card-header">دسته‌بندی‌ها <span class="text-muted small">(<?php echo count($cats); ?>)</span></div>
       <div class="table-responsive">
         <table class="table table-sm align-middle mb-0">
-          <thead><tr><th>نام</th><th>توضیحات</th><th>اقلام</th><th class="text-end">عملیات</th></tr></thead>
+          <thead><tr><th>نام</th><th>گروه</th><th>توضیحات</th><th>اقلام</th><th class="text-end">عملیات</th></tr></thead>
           <tbody>
           <?php foreach ($cats as $c): ?>
             <tr>
-              <td><?php echo h($c['name']); ?></td>
+              <td><?php if ($c['parent_id']): ?><span class="text-muted">↳ </span><?php endif; ?><?php echo h($c['name']); ?></td>
+              <td class="text-muted small"><?php echo h($c['grp'] ?? ''); ?></td>
               <td class="text-muted small"><?php echo h($c['description'] ?? '—'); ?></td>
               <td><?php echo (int)$c['item_count']; ?></td>
               <td class="table-actions text-end">
@@ -101,7 +123,7 @@ require_once __DIR__ . '/../includes/header.php';
             </tr>
           <?php endforeach; ?>
           <?php if (count($cats) === 0): ?>
-            <tr><td colspan="4" class="text-center text-muted py-3">هنوز دسته‌بندی وجود ندارد - یکی اضافه کنید.</td></tr>
+            <tr><td colspan="5" class="text-center text-muted py-3">هنوز دسته‌بندی وجود ندارد - یکی اضافه کنید.</td></tr>
           <?php endif; ?>
           </tbody>
         </table>

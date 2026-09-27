@@ -3,7 +3,7 @@
  * Purchase list with filters.
  */
 require_once __DIR__ . '/../includes/auth.php';
-$user = require_role('procurement_manager', 'committee', 'admin');
+$user = require_role('procurement_manager', 'committee', 'general_manager', 'finance', 'warehouse_manager', 'admin');
 $page_title = 'خریدها';
 $base = BASE_URL;
 $role = $user['role'];

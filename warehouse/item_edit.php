@@ -48,7 +48,9 @@ if (is_post()) {
     }
 }
 
-$cats = fetch_all('SELECT id, name FROM categories ORDER BY name');
+$cats = fetch_all("SELECT c.id, c.name, g.name grp FROM categories c
+                   JOIN categories g ON g.id = c.parent_id
+                   WHERE c.parent_id IS NOT NULL ORDER BY g.name, c.name");
 $v = $item ? array_merge($item, ['name' => $item['name']]) : $old;
 require_once __DIR__ . '/../includes/header.php';
 ?>
@@ -68,9 +70,12 @@ require_once __DIR__ . '/../includes/header.php';
           <label class="form-label">دسته‌بندی</label>
           <select name="category_id" class="form-select">
             <option value="0">-- بدون دسته --</option>
-            <?php foreach ($cats as $c): ?>
+            <?php $last = null;
+                  foreach ($cats as $c): ?>
+            <?php if ($last !== $c['grp']): ?><?php if ($last !== null): ?></optgroup><?php endif; ?><optgroup label="<?php echo h($c['grp']); ?>"><?php $last = $c['grp']; ?><?php endif; ?>
             <option value="<?php echo $c['id']; ?>" <?php echo (int)($id > 0 ? $item['category_id'] : ($old['category_id'] ?? 0)) === (int)$c['id'] ? 'selected' : ''; ?>><?php echo h($c['name']); ?></option>
             <?php endforeach; ?>
+            <?php if ($last !== null): ?></optgroup><?php endif; ?>
           </select>
         </div>
         <div class="col-md-3">

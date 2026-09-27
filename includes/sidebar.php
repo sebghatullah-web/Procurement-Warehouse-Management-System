@@ -14,8 +14,8 @@ function sidebar_link($href, $icon, $label, $sep = false)
 }
 ?>
 <nav class="nav sidebar-nav flex-column">
-  <div class="nav-title">Main</div>
-  <a class="nav-link" href="<?php echo $base; ?>/index.php"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>
+  <div class="nav-title">اصلی</div>
+  <a class="nav-link" href="<?php echo $base; ?>/index.php"><i class="bi bi-speedometer2"></i><span>دشبورد</span></a>
 
   <?php if ($role === 'employee' || $isA || $role === 'procurement_manager'): ?>
   <a class="nav-link" href="<?php echo $base; ?>/requests/create.php"><i class="bi bi-plus-square"></i><span>درخواست جدید</span></a>
@@ -34,10 +34,16 @@ function sidebar_link($href, $icon, $label, $sep = false)
   <a class="nav-link" href="<?php echo $base; ?>/requests/list.php?status=pending"><i class="bi bi-check2-circle"></i><span>صف بررسی</span></a>
   <?php endif; ?>
 
-  <?php if ($role === 'procurement_manager' || $role === 'committee' || $isA): ?>
+  <?php if (in_array($role, ['procurement_manager','committee','finance','general_manager','admin'], true)): ?>
   <div class="nav-title">خرید و تدارکات</div>
   <a class="nav-link" href="<?php echo $base; ?>/purchases/list.php"><i class="bi bi-cart-check"></i><span>خریدها</span></a>
   <a class="nav-link" href="<?php echo $base; ?>/purchases/committee.php"><i class="bi bi-people"></i><span>تصویب کمیته</span></a>
+  <?php if (in_array($role, ['finance','general_manager','admin'], true)): ?>
+  <a class="nav-link" href="<?php echo $base; ?>/purchases/list.php?status=authority_approved"><i class="bi bi-cash-coin"></i><span>تأمین هزینه (مالی)</span></a>
+  <?php endif; ?>
+  <?php if (in_array($role, ['general_manager','admin'], true)): ?>
+  <a class="nav-link" href="<?php echo $base; ?>/purchases/list.php?status=supplier_selected"><i class="bi bi-person-badge"></i><span>تصویب ریاست</span></a>
+  <?php endif; ?>
   <?php endif; ?>
 
   <?php if ($role === 'procurement_manager' || $isA): ?>
@@ -48,6 +54,7 @@ function sidebar_link($href, $icon, $label, $sep = false)
   <div class="nav-title">انبار</div>
   <a class="nav-link" href="<?php echo $base; ?>/warehouse/inventory.php"><i class="bi bi-boxes"></i><span>موجودی انبار</span></a>
   <a class="nav-link" href="<?php echo $base; ?>/warehouse/categories.php"><i class="bi bi-tags"></i><span>دسته‌بندی‌ها</span></a>
+  <a class="nav-link" href="<?php echo $base; ?>/purchases/list.php?status=received"><i class="bi bi-boxes"></i><span>ثبت گدام / تحویل</span></a>
   <a class="nav-link" href="<?php echo $base; ?>/requests/list.php?status=warehouse_check"><i class="bi bi-upc-scan"></i><span>بررسی انبار</span></a>
   <a class="nav-link" href="<?php echo $base; ?>/consumptions/list.php"><i class="bi bi-box-arrow-up"></i><span>تحویل و مصرف</span></a>
   <?php endif; ?>

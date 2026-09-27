@@ -13,16 +13,23 @@ if (is_post()) {
     $name   = trim($_POST['name'] ?? '');
     $code   = strtoupper(trim($_POST['code'] ?? ''));
     $desc   = trim($_POST['description'] ?? '');
+    $parent = (int)($_POST['parent_id'] ?? 0);
     $deptId = (int)($_POST['department_id'] ?? 0);
 
     if ($action === 'add' || $action === 'update') {
         if ($name === '' || $code === '') { $errors[] = 'نام و کد اداره الزامی است.'; }
+        elseif ($deptId > 0 && $parent === $deptId) { $errors[] = 'یک اداره نمی‌تواند والد خودش باشد.'; }
         elseif (count($errors) === 0) {
-            $fields = "name='" . esc($name) . "', code='" . esc($code) . "'";
-            if ($desc) $fields .= ", description='" . esc($desc) . "'";
-            $ok = ($action === 'add')
-                ? exec_sql("INSERT INTO departments SET $fields")
-                : exec_sql("UPDATE departments SET $fields WHERE id=$deptId");
+            $parentSql = $parent > 0 ? (string)$parent : 'NULL';
+            $descSql   = $desc === '' ? 'NULL' : "'" . esc($desc) . "'";
+            if ($action === 'add') {
+                $ok = exec_sql("INSERT INTO departments (name, code, description, parent_id)
+                                VALUES ('" . esc($name) . "', '" . esc($code) . "', $descSql, $parentSql)");
+            } else {
+                $ok = exec_sql("UPDATE departments SET
+                                name='" . esc($name) . "', code='" . esc($code) . "',
+                                description=$descSql, parent_id=$parentSql WHERE id=$deptId");
+            }
             if ($ok) {
                 flash_set('success', 'اداره ذخیره شد: ' . $name);
                 redirect_to($base . '/admin/departments.php');
@@ -32,12 +39,16 @@ if (is_post()) {
     } elseif ($action === 'delete') {
         $delId = (int)($_POST['del_id'] ?? 0);
         if ($delId > 0) {
+            $kids = fetch_one("SELECT COUNT(*) n FROM departments WHERE parent_id=$delId");
             $used = fetch_one("SELECT COUNT(*) n FROM users WHERE department_id=$delId");
-            if ((int)$used['n'] > 0) {
+            if ((int)$kids['n'] > 0) {
+                flash_set('warning', 'حذف ممکن نیست: این اداره ' . (int)$kids['n'] . ' اداره زیر مجموعه دارد - اول آن‌ها را نقل یا حذف کنید.');
+            } elseif ((int)$used['n'] > 0) {
                 flash_set('warning', 'حذف ممکن نیست: اداره توسط ' . (int)$used['n'] . ' کاربر استفاده می‌شود.');
             } else {
                 exec_sql("DELETE FROM departments WHERE id=$delId");
-                flash_set('success', 'اداره حذف شد.');
+                flash_set($conn->errno === 0 ? 'success' : 'danger',
+                          $conn->errno === 0 ? 'اداره حذف شد.' : $conn->error);
             }
         }
         redirect_to($base . '/admin/departments.php');
@@ -49,7 +60,10 @@ if (isset($_GET['id'])) {
     $eid = (int)$_GET['id'];
     $edit = fetch_one("SELECT * FROM departments WHERE id=$eid");
 }
-$rows = fetch_all("SELECT * FROM departments ORDER BY name");
+$branches = fetch_all('SELECT id, name FROM departments WHERE parent_id IS NULL ORDER BY name');
+$rows = fetch_all("SELECT d.*, p.name branch FROM departments d
+                   LEFT JOIN departments p ON p.id = d.parent_id
+                   ORDER BY IF(d.parent_id IS NULL, d.id, d.parent_id), d.parent_id IS NOT NULL, d.name");
 
 require_once __DIR__ . '/../includes/header.php';
 ?>
@@ -69,10 +83,19 @@ require_once __DIR__ . '/../includes/header.php';
         <form method="post">
           <input type="hidden" name="action" value="<?php echo $edit ? 'update' : 'add'; ?>">
           <?php if ($edit): ?><input type="hidden" name="department_id" value="<?php echo $edit['id']; ?>"><?php endif; ?>
-          <div class="mb-2"><label class="form-label required">نام اداره</label>
+          <div class="mb-2"><label class="form-label">بخش اصلی (والد)</label>
+            <select name="parent_id" class="form-select">
+              <option value="0">-- بدون والد (بخش اصلی) --</option>
+              <?php foreach ($branches as $b): ?>
+              <option value="<?php echo $b['id']; ?>" <?php echo (int)($edit ? $edit['parent_id'] : ($_POST['parent_id'] ?? 0)) === (int)$b['id'] ? 'selected' : ''; ?>><?php echo h($b['name']); ?></option>
+              <?php endforeach; ?>
+            </select>
+            <div class="form-text text-muted small">بخش اصلی را بدون والد ثبت کنید (مثلاً «امور دفتر»، «پیمان کاران»)؛ دیپارتمنت‌ها و تیم‌ها را زیر یک بخش ثبت کنید.</div>
+          </div>
+          <div class="mb-2"><label class="form-label required">نام اداره / تیم</label>
             <input type="text" name="name" class="form-control" required value="<?php echo h($edit ? $edit['name'] : ($_POST['name'] ?? '')); ?>"></div>
-          <div class="mb-2"><label class="form-label required">اداره</label>
-            <input type="text" name="code" class="form-control" required placeholder="e.g. SITE, HQ" value="<?php echo h($edit ? $edit['code'] : ($_POST['code'] ?? '')); ?>"></div>
+          <div class="mb-2"><label class="form-label required">کد اداره</label>
+            <input type="text" name="code" class="form-control" required placeholder="e.g. SITE, HQ, CT1" value="<?php echo h($edit ? $edit['code'] : ($_POST['code'] ?? '')); ?>"></div>
           <div class="mb-2"><label class="form-label">توضیحات</label>
             <textarea name="description" rows="2" class="form-control"><?php echo h($edit ? ($edit['description'] ?? '') : ($_POST['description'] ?? '')); ?></textarea></div>
           <button class="btn btn-primary" type="submit"><i class="bi bi-floppy me-2"></i>ذخیره اداره</button>
@@ -85,12 +108,13 @@ require_once __DIR__ . '/../includes/header.php';
       <div class="card-header">ادارات <span class="text-muted small">(<?php echo count($rows); ?>)</span></div>
       <div class="table-responsive">
         <table class="table table-sm align-middle mb-0">
-          <thead><tr><th>کد</th><th>نام</th><th>توضیحات</th><th class="text-end">عملیات</th></tr></thead>
+          <thead><tr><th>کد</th><th>نام</th><th>بخش</th><th>توضیحات</th><th class="text-end">عملیات</th></tr></thead>
           <tbody>
           <?php foreach ($rows as $d): ?>
             <tr>
               <td class="text-muted small"><?php $dcode = trim($d['code'] ?? ''); echo h($dcode !== '' ? $dcode : '—'); ?></td>
-              <td><?php echo h($d['name']); ?></td>
+              <td><?php if ($d['parent_id']): ?><span class="text-muted">↳ </span><?php endif; ?><?php echo h($d['name']); ?></td>
+              <td class="text-muted small"><?php echo h($d['branch'] ?? ''); ?></td>
               <td class="text-muted small"><?php echo h($d['description'] ?? '—'); ?></td>
               <td class="table-actions text-end">
                 <a class="btn btn-sm btn-outline-primary" href="?id=<?php echo $d['id']; ?>"><i class="bi bi-pencil-square"></i></a>
@@ -102,7 +126,7 @@ require_once __DIR__ . '/../includes/header.php';
             </tr>
           <?php endforeach; ?>
           <?php if (count($rows) === 0): ?>
-            <tr><td colspan="4" class="text-center text-muted py-3">هیچ اداره‌ای ثبت نشده است.</td></tr>
+            <tr><td colspan="5" class="text-center text-muted py-3">هیچ اداره‌ای ثبت نشده است.</td></tr>
           <?php endif; ?>
           </tbody>
         </table>

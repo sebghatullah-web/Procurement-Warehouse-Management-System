@@ -29,9 +29,7 @@ if (is_post()) {
     $rdate   = trim($old['request_date'] ?? today());
     $ndate   = trim($old['needed_date'] ?? '');
 
-    if (!$dept_id)       { $errors[] = 'لطفاً یک اداره را انتخاب کنید.'; }
-    if ($emp_name === '') { $errors[] = 'اسم کارمند (درخواست‌کننده) را درج کنید.'; }
-    if ($emp_pos === '')  { $emp_pos = '—'; }
+    if (!$dept_id)       { $errors[] = 'لطفاً یک دیپارتمنت را انتخاب کنید.'; }
     if ($item === '')    { $errors[] = 'نام کالا الزامی است.'; }
     if ($qty === '')     { $errors[] = 'مقدار / تعداد کالا را وارد کنید.'; }
     if ($rdate === '')   { $rdate = today(); }
@@ -64,8 +62,23 @@ if (is_post()) {
 }
 
 $user = current_user();
-$depts = fetch_all('SELECT id, name FROM departments ORDER BY name');
-$cats  = fetch_all('SELECT id, name FROM categories ORDER BY name');
+
+/* دو-شاخه‌ی دیپارتمنت‌ها: بخش اصلی (parent) و دیپارتمنت‌های زیر آن (leaf) */
+$branches = fetch_all('SELECT id, name FROM departments WHERE parent_id IS NULL ORDER BY name');
+$deptLeafs = fetch_all('SELECT id, name, parent_id FROM departments WHERE parent_id IS NOT NULL ORDER BY name');
+/* دسته‌بندی دو-سطحی: گروه اصلی و دسته‌های زیر آن */
+$groups = fetch_all('SELECT id, name FROM categories WHERE parent_id IS NULL ORDER BY name');
+$catLeafs = fetch_all('SELECT id, name, parent_id FROM categories WHERE parent_id IS NOT NULL ORDER BY name');
+
+/* انتخاب‌های قبلی / پیش‌فرض (کارمند و بخش و دسته‌بندی او) */
+$selDept = (int)($old['department_id'] ?? ($user['department_id'] ?? 0));
+$selBranch = 0;
+foreach ($deptLeafs as $d) { if ((int)$d['id'] === $selDept) { $selBranch = (int)$d['parent_id']; } }
+if ($selBranch === 0 && $selDept > 0) { $selBranch = $selDept; } /* خود دیپارتمنت یک بخش اصلی است */
+$selCat = (int)($old['category_id'] ?? 0);
+$selGroup = 0;
+foreach ($catLeafs as $c) { if ((int)$c['id'] === $selCat) { $selGroup = (int)$c['parent_id']; } }
+if ($selGroup === 0 && $selCat > 0) { $selGroup = $selCat; }
 require_once __DIR__ . '/../includes/header.php';
 ?>
 <div class="row g-4">
@@ -81,35 +94,53 @@ require_once __DIR__ . '/../includes/header.php';
         <form method="post">
           <div class="row g-3">
             <div class="col-md-6">
-              <label class="form-label required">اسم کارمند (درخواست‌کننده)</label>
-              <input type="text" name="employee_name" class="form-control" required
+              <label class="form-label">اسم کارمند (درخواست‌کننده) <span class="text-muted small">— اختیاری</span></label>
+              <input type="text" name="employee_name" class="form-control"
                      value="<?php echo h($old['employee_name'] ?? $user['name']); ?>"
                      placeholder="اسم کامل کارمند">
-              <div class="form-text text-muted small">به‌جای نام کاربری، اسم واقعی کارمند درج می‌شود.</div>
+              <div class="form-text text-muted small">به‌جای نام کاربری، اسم واقعی کارمند درج می‌شود (اگر درج نکردید مشکلی نیست).</div>
             </div>
             <div class="col-md-6">
-              <label class="form-label required">موقعیت وظیفه‌ای</label>
-              <input type="text" name="employee_position" class="form-control" required
+              <label class="form-label">موقعیت وظیفه‌ای <span class="text-muted small">— اختیاری</span></label>
+              <input type="text" name="employee_position" class="form-control"
                      value="<?php echo h($old['employee_position'] ?? ''); ?>"
                      placeholder="مثلاً انجینر ساختمانی، حسابدار، کارمند تدارکات...">
-              <div class="form-text text-muted small">موقعیت و سمت وظیفه‌ای کارمند را درج کنید.</div>
+              <div class="form-text text-muted small">موقعیت و سمت وظیفه‌ای کارمند را درج کنید (اختیاری).</div>
             </div>
-            <div class="col-md-6">
-              <label class="form-label required">دیپارتمنت & بخش</label>
-              <select name="department_id" class="form-select" required>
-                <option value="0">-- انتخاب دیپارتمنت --</option>
-                <?php foreach ($depts as $d): ?>
-                <option value="<?php echo $d['id']; ?>" <?php echo (int)($old['department_id'] ?? ($user['department_id'] ?? 0)) === (int)$d['id'] ? 'selected' : ''; ?>><?php echo h($d['name']); ?></option>
+            <div class="col-md-3">
+              <label class="form-label required">بخش</label>
+              <select name="branch_id" id="deptBranch" class="form-select">
+                <option value="0">-- انتخاب بخش --</option>
+                <?php foreach ($branches as $b): ?>
+                <option value="<?php echo $b['id']; ?>" <?php echo $selBranch === (int)$b['id'] ? 'selected' : ''; ?>><?php echo h($b['name']); ?></option>
                 <?php endforeach; ?>
               </select>
-              <div class="form-text text-muted small">دیپارتمنت و بخش مورد نیاز خود را آزادانه انتخاب کنید.</div>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label required">دیپارتمنت / جزئیات</label>
+              <select name="department_id" id="deptSub" class="form-select" required>
+                <option value="0">-- انتخاب دیپارتمنت --</option>
+                <?php foreach ($deptLeafs as $d): ?>
+                <option value="<?php echo $d['id']; ?>" data-parent="<?php echo $d['parent_id']; ?>" <?php echo $selDept === (int)$d['id'] ? 'selected' : ''; ?>><?php echo h($d['name']); ?></option>
+                <?php endforeach; ?>
+              </select>
+              <div class="form-text text-muted small">اول بخش و بعد دیپارتمنت مورد نیاز خود را انتخاب کنید.</div>
             </div>
             <div class="col-md-6">
-              <label class="form-label">دسته‌بندی</label>
-              <select name="category_id" class="form-select">
+              <label class="form-label">گروه اصلی کالا</label>
+              <select name="group_id" id="catGroup" class="form-select">
+                <option value="0">-- انتخاب گروه --</option>
+                <?php foreach ($groups as $g): ?>
+                <option value="<?php echo $g['id']; ?>" <?php echo $selGroup === (int)$g['id'] ? 'selected' : ''; ?>><?php echo h($g['name']); ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">دسته‌بندی کالا</label>
+              <select name="category_id" id="catSub" class="form-select">
                 <option value="0">-- انتخاب دسته‌بندی --</option>
-                <?php foreach ($cats as $c): ?>
-                <option value="<?php echo $c['id']; ?>" <?php echo (int)($old['category_id'] ?? 0) === (int)$c['id'] ? 'selected' : ''; ?>><?php echo h($c['name']); ?></option>
+                <?php foreach ($catLeafs as $c): ?>
+                <option value="<?php echo $c['id']; ?>" data-parent="<?php echo $c['parent_id']; ?>" <?php echo $selCat === (int)$c['id'] ? 'selected' : ''; ?>><?php echo h($c['name']); ?></option>
                 <?php endforeach; ?>
               </select>
             </div>
@@ -192,4 +223,31 @@ require_once __DIR__ . '/../includes/header.php';
     </div>
   </div>
 </div>
+<script>
+(function () {
+  /* منوهای وابسته: بخش ← دیپارتمنت، گروه ← دسته‌بندی */
+  function bindSub(branchId, subId, firstIfMissing) {
+    var b = document.getElementById(branchId), s = document.getElementById(subId);
+    if (!b || !s) return;
+    function sync() {
+      var p = b.value, shown = 0, hasPick = false;
+      for (var i = 0; i < s.options.length; i++) {
+        var o = s.options[i];
+        if (o.value === '0') continue;
+        var show = (p === '0') || (String(o.dataset.parent) === String(p));
+        o.hidden = !show;
+        if (show) {
+          shown++;
+          if (o.value === s.value) hasPick = true;
+        }
+      }
+      if (!hasPick && shown > 0 && firstIfMissing) s.value = '0';
+    }
+    b.addEventListener('change', sync);
+    sync();
+  }
+  bindSub('deptBranch', 'deptSub', true);
+  bindSub('catGroup', 'catSub', true);
+})();
+</script>
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

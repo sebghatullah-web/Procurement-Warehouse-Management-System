@@ -9,9 +9,10 @@ $base = BASE_URL;
 $role = $user['role'];
 
 $id  = (int)($_GET['id'] ?? 0);
-$r = fetch_one("SELECT r.*, d.name dept, c.name cat, u.name requester, rv.name reviewer
+$r = fetch_one("SELECT r.*, d.name dept, pd.name branch, c.name cat, u.name requester, rv.name reviewer
                 FROM procurement_requests r
                 JOIN departments d ON d.id = r.department_id
+                LEFT JOIN departments pd ON pd.id = d.parent_id
                 LEFT JOIN categories c ON c.id = r.category_id
                 LEFT JOIN users u ON u.id = r.requested_by
                 LEFT JOIN users rv ON rv.id = r.reviewed_by
@@ -54,14 +55,14 @@ require_once __DIR__ . '/../includes/header.php';
       </div>
       <div class="card-body">
         <div class="row">
-          <div class="col-md-4"><div class="text-muted small">اداره</div><div class="fw-semibold"><?php echo h($r['dept']); ?></div></div>
+          <div class="col-md-4"><div class="text-muted small">اداره</div><div class="fw-semibold"><?php if ($r['branch']): ?><?php echo h($r['branch']); ?> / <?php endif; ?><?php echo h($r['dept']); ?></div></div>
           <div class="col-md-4"><div class="text-muted small">دسته‌بندی</div><div class="fw-semibold"><?php echo h($r['cat'] ?? '—'); ?></div></div>
           <div class="col-md-4"><div class="text-muted small">تاریخ درخواست</div><div class="fw-semibold"><?php echo h($r['request_date']); ?></div></div>
           <div class="col-md-4"><div class="text-muted small">تاریخ مورد نیاز</div><div class="fw-semibold"><?php echo h($r['needed_date'] ?? '—'); ?></div></div>
           <div class="col-md-4"><div class="text-muted small">کالا</div><div class="fw-semibold"><?php echo h($r['item_name']); ?></div></div>
           <div class="col-md-4"><div class="text-muted small">تعداد</div><div class="fw-semibold"><?php echo h($r['quantity']); ?> <?php echo h(unit_label($r['unit'])); ?></div></div>
           <div class="col-md-4"><div class="text-muted small">فوریت</div><?php echo badge($r['urgency']); ?></div>
-          <div class="col-md-4"><div class="text-muted small">کارمند / درخواست‌کننده</div><div class="fw-semibold"><?php echo h($r['employee_name'] ?? $r['requester']); ?><?php if ($r['employee_position']): ?> <span class="text-muted small">(<?php echo h($r['employee_position']); ?>)</span><?php endif; ?></div></div>
+          <div class="col-md-4"><div class="text-muted small">کارمند / درخواست‌کننده</div><div class="fw-semibold"><?php $en = trim($r['employee_name'] ?? ''); echo h($en !== '' ? $en : $r['requester']); ?><?php if (trim($r['employee_position'] ?? '') !== ''): ?> <span class="text-muted small">(<?php echo h($r['employee_position']); ?>)</span><?php endif; ?></div></div>
           <div class="col-md-4"><div class="text-muted small">تحویل مستقیم</div><div class="fw-semibold"><?php echo $r['direct_delivery'] ? 'بله' : 'خیر'; ?></div></div>
           <div class="col-md-4"><div class="text-muted small">بررسی‌کننده</div><div class="fw-semibold"><?php echo h($r['reviewer'] ?? '—'); ?></div></div>
         </div>
@@ -101,12 +102,15 @@ require_once __DIR__ . '/../includes/header.php';
           <?php if ($r['status'] !== 'pending' && $r['status'] !== 'closed'): ?>
           <li>بررسی و تأیید شده توسط تدارکات</li>
           <?php endif; ?>
-          <?php if (in_array($r['status'], ['purchase_required','quotation_pending','committee_pending','approved','purchased','received','completed'], true)): ?>
+          <?php if (in_array($r['status'], ['purchase_required','quotation_pending','committee_pending','approved','supplier_selected','authority_approved','financed','purchased','received','completed'], true)): ?>
           <li>در انبار موجود نیست - فرآیند خرید شروع شد</li>
           <?php endif; ?>
           <?php if ($r['status'] === 'closed'): ?><li class="text-danger">بسته شده به‌عنوان غیرضروری</li><?php endif; ?>
-          <?php if (in_array($r['status'], ['quotation_pending','committee_pending','approved','purchased','received','completed'], true)): ?>
+          <?php if (in_array($r['status'], ['quotation_pending','committee_pending','approved','supplier_selected','authority_approved','financed','purchased','received','completed'], true)): ?>
           <li>قیمت‌ها جمع‌آوری شد؛ تأیید کمیته لازم است</li>
+          <?php endif; ?>
+          <?php if (in_array($r['status'], ['supplier_selected','authority_approved','financed'], true)): ?>
+          <li>تصویب ریاست شرکت و تأمین هزینه توسط بخش مالی در جریان است</li>
           <?php endif; ?>
           <?php if (in_array($r['status'], ['purchased','received','completed'], true)): ?>
           <li>کالا از تأمین‌کننده نهایی سفارش داده شد</li>
@@ -125,7 +129,7 @@ require_once __DIR__ . '/../includes/header.php';
             <a class="btn btn-primary w-100" href="<?php echo $base; ?>/warehouse/check.php?request_id=<?php echo $r['id']; ?>"><i class="bi bi-upc-scan me-1"></i>بررسی انبار</a>
           <?php elseif ($r['status'] === 'purchase_required' && ($role === 'procurement_manager' || $role === 'admin')): ?>
             <a class="btn btn-primary w-100" href="<?php echo $base; ?>/purchases/create.php?request_id=<?php echo $r['id']; ?>"><i class="bi bi-cart-plus me-1"></i>شروع فرآیند خرید</a>
-          <?php elseif ($p0 && in_array($r['status'], ['quotation_pending','committee_pending','approved','purchased','received','completed'], true)): ?>
+          <?php elseif ($p0 && in_array($r['status'], ['quotation_pending','committee_pending','approved','supplier_selected','authority_approved','financed','purchased','received','completed'], true)): ?>
             <a class="btn btn-outline-primary w-100" href="<?php echo $base; ?>/purchases/view.php?id=<?php echo $p0['id']; ?>"><i class="bi bi-cart-check me-1"></i>باز کردن خرید #<?php echo h($p0['purchase_no']); ?></a>
             <?php if ($r['status'] === 'purchased' && ($role === 'gate_security' || $role === 'admin')): ?>
               <a class="btn btn-outline-warning w-100 mt-2" href="<?php echo $base; ?>/gate/receipts.php?purchase_id=<?php echo $p0['id']; ?>"><i class="bi bi-shield-check me-1"></i>تکمیل چک‌لیست گیت</a>

@@ -47,7 +47,7 @@ CREATE TABLE `users` (
   `password`      VARCHAR(255) NOT NULL COMMENT 'bcrypt hash (password_hash)',
   `name`          VARCHAR(100) NOT NULL,
   `role`          ENUM('employee','procurement_manager','warehouse_manager',
-                       'gate_security','committee','general_manager','admin')
+                       'gate_security','committee','general_manager','finance','admin')
                        NOT NULL DEFAULT 'employee',
   `department_id` INT UNSIGNED NULL,
   `email`         VARCHAR(120) NULL,
@@ -65,10 +65,14 @@ CREATE TABLE `users` (
 CREATE TABLE `departments` (
   `id`         INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `name`       VARCHAR(100) NOT NULL UNIQUE,
-`code`       VARCHAR(20)  NOT NULL DEFAULT '' COMMENT 'short code e.g. SITE, HQ',
+  `code`       VARCHAR(20)  NOT NULL DEFAULT '' COMMENT 'short code e.g. SITE, HQ',
+  `parent_id`  INT UNSIGNED NULL COMMENT 'NULL = بخش اصلی؛ عدد = دیپارتمنت زیر آن بخش',
   `description` VARCHAR(255) NULL,
   `created_at` TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `idx_dept_parent` (`parent_id`),
+  CONSTRAINT `fk_dept_parent` FOREIGN KEY (`parent_id`)
+    REFERENCES `departments`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------
@@ -77,9 +81,13 @@ CREATE TABLE `departments` (
 CREATE TABLE `categories` (
   `id`         INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `name`       VARCHAR(100) NOT NULL UNIQUE,
+  `parent_id`  INT UNSIGNED NULL COMMENT 'NULL = گروه اصلی؛ عدد = دسته زیر آن گروه',
   `description` VARCHAR(255) NULL,
   `created_at` TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `idx_cat_parent` (`parent_id`),
+  CONSTRAINT `fk_cat_parent` FOREIGN KEY (`parent_id`)
+    REFERENCES `categories`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------
@@ -127,6 +135,9 @@ CREATE TABLE `warehouse_items` (
 --    quotation_pending  -> normal purchase; collecting supplier quotes
 --    committee_pending  -> quotes ready; awaiting committee approval
 --    approved           -> approved by committee / urgent approval
+--    supplier_selected  -> winning company + price fixed; awaiting presidency
+--    authority_approved -> presidency approved; awaiting finance hand-over
+--    financed           -> finance handed the money over; ready to order
 --    purchased          -> ordered at final supplier
 --    received           -> received at gate, checklist complete
 --    completed          -> fulfilled (delivered / stored)
@@ -145,6 +156,7 @@ CREATE TABLE `procurement_requests` (
   `details`        TEXT         NULL COMMENT 'detailed item specifications',
   `status`         ENUM('pending','closed','warehouse_check','purchase_required',
                         'quotation_pending','committee_pending','approved',
+                        'supplier_selected','authority_approved','financed',
                         'purchased','received','completed')
                         NOT NULL DEFAULT 'pending',
   `requested_by`   INT UNSIGNED NOT NULL,
@@ -195,7 +207,8 @@ CREATE TABLE `quotations` (
 
 -- ---------------------------------------------------------------------
 --  PURCHASES
---    draft -> quotation -> committee_pending -> approved -> ordered
+--    draft -> quotation -> committee_pending -> approved
+--    -> supplier_selected -> authority_approved -> financed -> ordered
 --    -> received -> completed   (rejected only for committee rejection)
 -- ---------------------------------------------------------------------
 CREATE TABLE `purchases` (
@@ -203,6 +216,7 @@ CREATE TABLE `purchases` (
   `purchase_no`      VARCHAR(30)  NOT NULL UNIQUE,
   `request_id`       INT UNSIGNED NOT NULL,
   `supplier_id`      INT UNSIGNED NULL COMMENT 'final supplier',
+  `selected_quotation_id` INT UNSIGNED NULL COMMENT 'winning quotation chosen by procurement',
   `quantity`         DECIMAL(12,2) NOT NULL,
   `unit_price`       DECIMAL(12,2) NULL,
   `total_cost`       DECIMAL(12,2) NULL,
@@ -211,11 +225,26 @@ CREATE TABLE `purchases` (
   `urgency`          ENUM('normal','urgent') NOT NULL DEFAULT 'normal',
   `payment_status`   ENUM('pending','paid')  NOT NULL DEFAULT 'pending',
   `status`           ENUM('draft','quotation','committee_pending','approved',
+                          'supplier_selected','authority_approved','financed',
                           'ordered','received','completed','rejected')
                           NOT NULL DEFAULT 'draft',
   `approved_by`      INT UNSIGNED NULL,
   `committee_approved` TINYINT(1) NOT NULL DEFAULT 0,
   `committee_note`   TEXT         NULL,
+  `authority_name`   VARCHAR(150) NULL COMMENT 'name of the approving president / executive director',
+  `authority_position` VARCHAR(150) NULL COMMENT 'position of the approving authority',
+  `authority_approved_by` INT UNSIGNED NULL COMMENT 'user account that registered the approval',
+  `authority_approved_at` DATETIME NULL,
+  `authority_note`   TEXT         NULL COMMENT 'comment of the company presidency',
+  `finance_method`   ENUM('bank_cheque','cash','bank_transfer','other') NULL COMMENT 'how finance delivers the money',
+  `finance_ref_no`   VARCHAR(60)  NULL COMMENT 'cheque / voucher / reference number',
+  `finance_amount`   DECIMAL(14,2) NULL COMMENT 'amount handed over by finance',
+  `finance_currency` ENUM('AFN','USD') NOT NULL DEFAULT 'AFN' COMMENT 'currency of the handed-over amount',
+  `finance_note`     TEXT         NULL COMMENT 'message from finance to the purchasing department',
+  `finance_released_by` INT UNSIGNED NULL,
+  `finance_released_at` DATETIME   NULL,
+  `order_registered_by` INT UNSIGNED NULL,
+  `order_registered_at` DATETIME   NULL,
   `announcement_note` TEXT        NULL COMMENT 'public announcement / bulk',
   `created_at`       TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at`       TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -269,17 +298,27 @@ CREATE TABLE `gate_checklists` (
 
 -- ---------------------------------------------------------------------
 --  CONSUMPTIONS  (issued from warehouse OR direct delivery to department)
+--  Doubles as the handover slip (فورم تسلیمی): handover_no, receiving
+--  employee, electronic confirmation + a link back to the purchase.
 -- ---------------------------------------------------------------------
 CREATE TABLE `consumptions` (
   `id`            INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `item_id`       INT UNSIGNED NULL COMMENT 'warehouse item (NULL = direct)',
   `request_id`    INT UNSIGNED NULL,
+  `purchase_id`   INT UNSIGNED NULL COMMENT 'the purchase this delivery came from',
   `department_id` INT UNSIGNED NOT NULL,
   `item_name`     VARCHAR(150) NOT NULL COMMENT 'snapshot of item name',
   `category_id`   INT UNSIGNED NULL,
   `quantity`      DECIMAL(12,2) NOT NULL,
   `unit`          VARCHAR(20)  NOT NULL DEFAULT 'pcs',
   `source`        ENUM('warehouse','direct') NOT NULL DEFAULT 'warehouse',
+  `handover_no`   VARCHAR(30)  NULL COMMENT 'handover slip number (HND-YYYY-0001)',
+  `receiver_name` VARCHAR(150) NULL COMMENT 'employee that received the item',
+  `receiver_position` VARCHAR(150) NULL COMMENT 'job position of the receiving employee',
+  `receiver_user_id` INT UNSIGNED NULL COMMENT 'logged-in user confirming the receipt',
+  `receiver_confirmed` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '1 = requester confirmed receiving the item',
+  `confirmed_at`  DATETIME     NULL,
+  `handover_note` TEXT         NULL COMMENT 'remarks on the handover slip',
   `delivery_date` DATE         NOT NULL,
   `delivered_by`  INT UNSIGNED NULL,
   `notes`         TEXT         NULL,
@@ -287,6 +326,8 @@ CREATE TABLE `consumptions` (
   PRIMARY KEY (`id`),
   KEY `idx_cons_dept` (`department_id`),
   KEY `idx_cons_date` (`delivery_date`),
+  KEY `idx_cons_purchase` (`purchase_id`),
+  KEY `idx_cons_handover` (`handover_no`),
   CONSTRAINT `fk_cons_item` FOREIGN KEY (`item_id`)
     REFERENCES `warehouse_items`(`id`) ON DELETE SET NULL,
   CONSTRAINT `fk_cons_request` FOREIGN KEY (`request_id`)
@@ -307,28 +348,83 @@ SET FOREIGN_KEY_CHECKS = 1;
 --    'password' : $2y$10$pGRKXtjZnTUeCOCnPWwEWeOAx7.P/PToiwCM7MlcpbvAGKFlQ9swu
 --    'admin123' : $2y$10$N18OsByDxvB0joRCtKOJvO25.V.xwlEYrclzG9NTDyjJFUf61V6z6
 -- ---------------------------------------------------------------------
-INSERT INTO `departments` (`id`,`name`,`description`) VALUES
-(1,'ساخت و ساز','کارهای ساختمانی و سایت'),
-(2,'اداری','پشتیبانی دفتر و اداری'),
-(3,'مالی','حسابداری و پرداخت‌ها'),
-(4,'منابع بشری','مدیریت کارمندان'),
-(5,'لجستیک و انبار','جابجایی و نگهداری مواد'),
-(6,'نگهداری و تعمیرات','نگهداری ماشین‌آلات و سایت'),
-(7,'کارگاه','تولید و تعمیرات'),
-(8,'آشپزخانه','غذا و سلف‌سرویس')
+INSERT INTO `departments` (`id`,`name`,`code`,`description`,`parent_id`) VALUES
+-- شاخه‌های اصلی
+(100,'امور دفتر','HQ','بخش مرکزی امور دفتری، اداری، تدارکات و گدام‌داری',NULL),
+(200,'پیمان کاران','CTR','تیم‌ها و قراردادی‌های بخش ساخت و ساز',NULL),
+-- دیپارتمنت‌های دفتری (زیر «امور دفتر»)
+(2,'اداری','ADM','پشتیبانی دفتر و اداری',100),
+(3,'مالی','FIN','حسابداری و پرداخت‌ها',100),
+(4,'منابع بشری','HR','مدیریت کارمندان',100),
+(5,'گدام‌داری','WH','مدیریت گدام، ذخیره و توزیع مواد',100),
+(6,'نگهداری و تعمیرات','MNT','نگهداری ماشین‌آلات و سایت',100),
+(8,'آشپزخانه','KIT','غذا و سلف‌سرویس',100),
+(201,'اجرائیه','EXE','مقام و اجرائیه‌ی امور عمومی',100),
+(202,'پالیسی','POL','تدوین و تطبیق پالیسی‌ها و نصاب‌ها',100),
+(203,'انجینیری','ENG','امور انجینیری و استندردهای ساختمانی',100),
+(204,'تدارکات','PRC','امور خرید، قیمت‌گیری و تدارکات',100),
+(205,'آی‌تی','IT','تخنالوژی معلوماتی و سیستم‌های کمپیوتر',100),
+-- ساحه و تیم‌های قراردادی (زیر «پیمان کاران»)
+(1,'ساخت و ساز','SITE','کارهای ساختمانی و سایت',200),
+(7,'کارگاه','WRK','تولید و تعمیرات',200),
+(206,'تیم بتن‌کاری','CT1','تیم‌های بتن‌ریزی و کانکریت قراردادی',200),
+(207,'تیم خشت‌کاری و بنا','CT2','بناها و خشت‌کاران قراردادی',200),
+(208,'تیم لوله‌کشی و صحی','CT3','قراردادی‌های لوله‌کشی و صحی',200),
+(209,'تیم برق‌کاری','CT4','قراردادی‌های برق‌کاری ساحه',200),
+(210,'تیم رنگ و نقاشی','CT5','قراردادی‌های رنگ‌کاری',200)
 ON DUPLICATE KEY UPDATE `name`=`name`;
 
-INSERT INTO `categories` (`id`,`name`,`description`) VALUES
-(1,'ماشین‌آلات','ماشین‌آلات سنگین و سبک'),
-(2,'کانتینرها','کانتینرهای ذخیره‌سازی و قاب‌ها'),
-(3,'ملزومات اداری','مواد عمومی اداری'),
-(4,'مبلمان','صندلی، میز، میزکار'),
-(5,'لوازم التحریر','کاغذ، قلم، چاپ'),
-(6,'لوازم آشپزخانه','ظروف آشپزخانه و سلف'),
-(7,'ابزار کارگاه','ابزار دستی و برقی'),
-(8,'مصالح ساختمانی','سیمان، فولاد، سنگ‌دانه'),
-(9,'برقی','سیم‌کشی، اتصالات، روشنایی'),
-(10,'تجهیزات ایمنی','وسایل حفاظت فردی و ایمنی')
+INSERT INTO `categories` (`id`,`name`,`description`,`parent_id`) VALUES
+-- گروه‌های اصلی (بخش بالایی)
+(11,'مواد و مصالح ساختمانی','مواد خام و مصالح برای ساخت و ساز',NULL),
+(12,'اقلام برقی و روشنایی','سیم‌کشی، روشنایی و اتصالات برقی',NULL),
+(13,'لوازم لوله‌کشی و صحی','پایپ، شیرآلات و وسایل بهداشتی ساختمان',NULL),
+(14,'لوازم اداری و دفتر','ملزومات اداری، لوازم التحریر و فرنیچر',NULL),
+(15,'ماشین‌آلات، ابزار و تجهیزات','ماشین‌آلات، ابزار دستی و برقی',NULL),
+(16,'تجهیزات ایمنی و حفاظتی','وسایل حفاظت فردی و ایمنی کار',NULL),
+(17,'کانتینر و تجهیزات سایت','کانتینرها، قاب‌ها و تجهیزات ساحه',NULL),
+(18,'لوازم آشپزخانه و سلف','وسایل پخت و غذا',NULL),
+-- دسته‌های موجود
+(1,'ماشین‌آلات','ماشین‌آلات سنگین و سبک',15),
+(2,'کانتینرها','کانتینرهای ذخیره‌سازی و قاب‌ها',17),
+(3,'ملزومات اداری','مواد عمومی اداری',14),
+(4,'مبلمان','صندلی، میز، میزکار',14),
+(5,'لوازم التحریر','کاغذ، قلم، چاپ',14),
+(6,'لوازم آشپزخانه','ظروف آشپزخانه و سلف',18),
+(7,'ابزار کارگاه','ابزار دستی و برقی',15),
+(8,'مصالح ساختمانی','سیمان، فولاد، سنگ‌دانه',11),
+(9,'برقی','سیم‌کشی، اتصالات، روشنایی',12),
+(10,'تجهیزات ایمنی','وسایل حفاظت فردی و ایمنی',16),
+-- دسته‌های جدید (به دری افغانستانی)
+(19,'سیمان و کانکریت آماده','سیمان، پرادخت و کانکریت آماده',11),
+(20,'شن، ریگ و سنگ‌دانه','شن، ریگ، جغل و سنگ‌دانه',11),
+(21,'خشت و بلاک','خشت، بلاک سمنتی و سفالی',11),
+(22,'فولاد و میلگرد','میلگرد، تیرآهن و پروقیل‌ها',11),
+(23,'چوب، تخته و الواری','چوب، تخته و الواری چوبی',11),
+(24,'رنگ، روغن و مواد نقاشی','رنگ، روغن، تینر و مواد نقاشی',11),
+(25,'گچ، ساخف و مواد عایق','ساخف، گچ و مواد عایق حرارتی/برقی',11),
+(26,'شیشه و آیینه','شیشه‌ی پنجره، آیینه و کریستال',11),
+(27,'سیم و کیبل برقی','سیم و کیبل انواع سایزها',12),
+(28,'لامپ و بلب روشنایی','لامپ، بلب و لوازم روشنایی',12),
+(29,'سوییچ، پریز و فیوض','سوییچ، پریز، ساکت و فیوض',12),
+(30,'لوازم برق‌کاری','نوار چسب، کاندویت، ترمینال و اتصالات',12),
+(31,'پایپ و تنب','پایپ PVC، آهنی و تنب‌ها',13),
+(32,'شیرآلات و ولو','شیر آب، ولو و اتصالات',13),
+(33,'تشناب، سنک و ملزومات حمام','تشناب، سنک و شیرهای حمام',13),
+(34,'پمپ و موتر آب','پمپ آب و موترهای آن',13),
+(35,'تجهیزات آی‌تی و شبکه','کمپیوتر، پرینتر و وسایل شبکه',14),
+(36,'لوازم دفتری عمومی','سوییچ قفل، مالیاتوری، سیلفون و ضمایم',14),
+(37,'ماشین‌آلات سنگین','لودر، کریان، کرین و دامپ‌ترک',15),
+(38,'ماشین‌آلات سبک','ژنراتور، کمپرسور و کراشر',15),
+(39,'ابزار دستی','چلون، پیچ‌کش، کلید و همرو',15),
+(40,'ابزار برقی','دریل، انگرایندر و برقی‌ابزارها',15),
+(41,'ابزار نجاری و خشت‌کاری','ابزار بنا و نجار',15),
+(42,'لباس و وسایل حفاظت فردی','کلاه، دستکش، ماسک و لباس کاری',16),
+(43,'وسایل امنیت ساحه','وسایل امنیت و نجات ساحه',16),
+(44,'قاب‌های موقتی و اسکان','قاب‌های اداری سایت و اسکان',17),
+(45,'تجهیزات ساحه','جدول‌ها، سایه‌بان و تجهیزات سایت',17),
+(46,'ظروف و وسایل آشپزخانه','ظروف، سطل و تجهیزات آشپزخانه',18),
+(47,'مواد غذایی و سلف','خشکبار و مواد غذایی',18)
 ON DUPLICATE KEY UPDATE `name`=`name`;
 
 INSERT INTO `users`
@@ -339,7 +435,8 @@ INSERT INTO `users`
 (4,'gate','$2y$10$pGRKXtjZnTUeCOCnPWwEWeOAx7.P/PToiwCM7MlcpbvAGKFlQ9swu','امنیت گیت','gate_security',5,'gate@khawar.pk','0300-0000004',1),
 (5,'committee','$2y$10$pGRKXtjZnTUeCOCnPWwEWeOAx7.P/PToiwCM7MlcpbvAGKFlQ9swu','عضو کمیته','committee',3,'committee@khawar.pk','0300-0000005',1),
 (6,'gm','$2y$10$pGRKXtjZnTUeCOCnPWwEWeOAx7.P/PToiwCM7MlcpbvAGKFlQ9swu','مدیر عمومی','general_manager',1,'gm@khawar.pk','0300-0000006',1),
-(7,'employee','$2y$10$pGRKXtjZnTUeCOCnPWwEWeOAx7.P/PToiwCM7MlcpbvAGKFlQ9swu','علی خان','employee',1,'ali.khan@khawar.pk','0300-0000007',1)
+(7,'employee','$2y$10$pGRKXtjZnTUeCOCnPWwEWeOAx7.P/PToiwCM7MlcpbvAGKFlQ9swu','علی خان','employee',1,'ali.khan@khawar.pk','0300-0000007',1),
+(8,'finance','$2y$10$pGRKXtjZnTUeCOCnPWwEWeOAx7.P/PToiwCM7MlcpbvAGKFlQ9swu','مدیر مالی','finance',3,'finance@khawar.pk','0300-0000008',1)
 ON DUPLICATE KEY UPDATE `name`=`name`;
 
 INSERT INTO `suppliers`
@@ -424,15 +521,16 @@ UPDATE `procurement_requests` SET
   END;
 
 INSERT INTO `consumptions`
-(`id`,`item_id`,`request_id`,`department_id`,`item_name`,`category_id`,`quantity`,
- `unit`,`source`,`delivery_date`,`delivered_by`,`notes`) VALUES
-(1,1,1,1,'سیمان (کیسه ۵۰ کیلویی لکی)',8,100.00,'bag','warehouse','2026-01-06',3,'صادر شده برای کار فونداسیون'),
-(2,NULL,2,5,'کانتینر فولادی ۲۰ فوت',2,1.00,'pcs','direct','2026-02-20',3,'تحویل مستقیم هنگام خرید'),
-(3,3,3,2,'بسته کاغذ A4',5,30.00,'ream','warehouse','2026-03-02',3,'صدور فصلی'),
-(4,NULL,4,4,'کلاه ایمنی',10,25.00,'pcs','direct','2026-04-18',3,'تحویل مستقیم هنگام خرید'),
-(5,NULL,5,7,'دریل کارگاه',7,2.00,'pcs','direct','2026-05-21',3,'تحویل مستقیم هنگام خرید'),
-(6,1,12,1,'سیمان (کیسه ۵۰ کیلویی لکی)',8,200.00,'bag','warehouse','2025-11-04',3,'فونداسیون بلوک برج'),
-(7,NULL,13,5,'کانتینر فولادی ۲۰ فوت',2,1.00,'pcs','direct','2025-12-20',3,'تحویل مستقیم هنگام خرید')
+(`id`,`item_id`,`request_id`,`purchase_id`,`department_id`,`item_name`,`category_id`,`quantity`,
+ `unit`,`source`,`handover_no`,`receiver_name`,`receiver_position`,`receiver_confirmed`,`confirmed_at`,
+ `delivery_date`,`delivered_by`,`notes`) VALUES
+(1,1,1,NULL,1,'سیمان (کیسه ۵۰ کیلویی لکی)',8,100.00,'bag','warehouse','HND-2026-0001','علی خان','کارگر ساخت',1,'2026-01-06 14:00:00','2026-01-06',3,'صادر شده برای کار فونداسیون'),
+(2,NULL,2,1,5,'کانتینر فولادی ۲۰ فوت',2,1.00,'pcs','direct','HND-2026-0002','علی خان','کارگر ساخت',1,'2026-02-20 11:00:00','2026-02-20',3,'تحویل مستقیم هنگام خرید'),
+(3,3,3,NULL,2,'بسته کاغذ A4',5,30.00,'ream','warehouse','HND-2026-0003','علی خان','کارگر ساخت',1,'2026-03-02 10:30:00','2026-03-02',3,'صدور فصلی'),
+(4,NULL,4,2,4,'کلاه ایمنی',10,25.00,'pcs','direct','HND-2026-0004','علی خان','کارگر ساخت',1,'2026-04-18 09:15:00','2026-04-18',3,'تحویل مستقیم هنگام خرید'),
+(5,NULL,5,3,7,'دریل کارگاه',7,2.00,'pcs','direct','HND-2026-0005','علی خان','کارگر ساخت',1,'2026-05-21 15:45:00','2026-05-21',3,'تحویل مستقیم هنگام خرید'),
+(6,1,12,NULL,1,'سیمان (کیسه ۵۰ کیلویی لکی)',8,200.00,'bag','warehouse','HND-2025-0001','علی خان','کارگر ساخت',1,'2025-11-04 13:20:00','2025-11-04',3,'فونداسیون بلوک برج'),
+(7,NULL,13,6,5,'کانتینر فولادی ۲۰ فوت',2,1.00,'pcs','direct','HND-2025-0002','علی خان','کارگر ساخت',1,'2025-12-20 10:00:00','2025-12-20',3,'تحویل مستقیم هنگام خرید')
 ON DUPLICATE KEY UPDATE `item_name`=`item_name`;
 INSERT INTO `purchases`
 (`id`,`purchase_no`,`request_id`,`supplier_id`,`quantity`,`unit_price`,`total_cost`,

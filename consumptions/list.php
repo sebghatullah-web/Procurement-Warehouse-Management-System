@@ -25,7 +25,7 @@ $sql = "SELECT c.*, d.name dept FROM consumptions c
 if (count($where)) { $sql .= ' WHERE ' . implode(' AND ', $where); }
 $sql .= ' ORDER BY c.id DESC';
 $rows = fetch_all($sql);
-$depts = fetch_all('SELECT id, name FROM departments ORDER BY name');
+$depts = fetch_all('SELECT id, name FROM departments WHERE parent_id IS NOT NULL ORDER BY name');
 
 require_once __DIR__ . '/../includes/header.php';
 ?>
