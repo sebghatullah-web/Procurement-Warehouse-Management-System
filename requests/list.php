@@ -26,6 +26,8 @@ if ($q !== '') {
 }
 $st = trim($_GET['status'] ?? '');
 if ($st !== '') { $where[] = "r.status = '" . esc($st) . "'"; }
+$type = ($_GET['type'] ?? '') === 'rental' ? 'rental' : (($_GET['type'] ?? '') === 'purchase' ? 'purchase' : '');
+if ($type !== '') { $where[] = "r.request_type = '" . esc($type) . "'"; }
 $dp = (int)($_GET['department_id'] ?? 0);
 if ($dp > 0) { $where[] = 'r.department_id = ' . $dp; }
 $frm = trim($_GET['from_date'] ?? '');
@@ -63,6 +65,14 @@ require_once __DIR__ . '/../includes/header.php';
       </select>
     </div>
     <div class="col-md-2">
+      <label class="form-label small text-muted">نوع درخواست</label>
+      <select name="type" class="form-select form-select-sm" data-autosubmit>
+        <option value="">همه</option>
+        <option value="purchase" <?php echo $type === 'purchase' ? 'selected' : ''; ?>>خرید</option>
+        <option value="rental" <?php echo $type === 'rental' ? 'selected' : ''; ?>>کرایه</option>
+      </select>
+    </div>
+    <div class="col-md-2">
       <label class="form-label small text-muted">اداره</label>
       <select name="department_id" class="form-select form-select-sm" data-autosubmit>
         <option value="0">همه</option>
@@ -91,7 +101,7 @@ require_once __DIR__ . '/../includes/header.php';
   <div class="table-responsive">
     <table class="table table-hover align-middle mb-0" id="mainTable">
       <thead>
-        <tr><th>شماره درخواست</th><th>تاریخ</th><th>تاریخ مورد نیاز</th><th>اداره</th><th>کالا</th><th>دسته‌بندی</th><th>مقدار</th><th>کارمند (موقعیت)</th><th>فوریت</th><th>وضعیت</th><th></th></tr>
+        <tr><th>شماره درخواست</th><th>تاریخ</th><th>تاریخ مورد نیاز</th><th>اداره</th><th>نوع</th><th>کالا</th><th>دسته‌بندی</th><th>مقدار</th><th>کارمند (موقعیت)</th><th>فوریت</th><th>وضعیت</th><th></th></tr>
       </thead>
       <tbody>
       <?php foreach ($rows as $r): ?>
@@ -100,6 +110,7 @@ require_once __DIR__ . '/../includes/header.php';
           <td class="text-muted small text-nowrap"><?php echo h($r['request_date']); ?></td>
           <td class="text-muted small text-nowrap"><?php echo h($r['needed_date'] ?? '—'); ?></td>
           <td><?php if ($r['branch']): ?><span class="text-muted small"><?php echo h($r['branch']); ?> / </span><?php endif; ?><?php echo h($r['dept']); ?></td>
+          <td><?php echo ($r['request_type'] ?? 'purchase') === 'rental' ? '<span class="badge text-bg-info">کرایه</span>' : '<span class="badge text-bg-secondary">خرید</span>'; ?></td>
           <td><?php echo h($r['item_name']); ?></td>
           <td class="text-muted small"><?php echo h($r['cat'] ?? '-'); ?></td>
           <td class="text-nowrap"><?php echo h($r['quantity']); ?> <?php echo h(unit_label($r['unit'])); ?></td>
@@ -111,7 +122,7 @@ require_once __DIR__ . '/../includes/header.php';
         </tr>
       <?php endforeach; ?>
       <?php if (count($rows) === 0): ?>
-        <tr><td colspan="11" class="text-center text-muted py-4">درخواستی یافت نشد.</td></tr>
+        <tr><td colspan="12" class="text-center text-muted py-4">درخواستی یافت نشد.</td></tr>
       <?php endif; ?>
       </tbody>
     </table>

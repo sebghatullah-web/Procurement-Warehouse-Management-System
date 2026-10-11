@@ -140,7 +140,11 @@ function today()
  */
 function qty_num($s)
 {
-    $s = str_replace([',', '٫', '،'], '.', (string)$s);
+    $s = strtr((string)$s, [
+        '۰'=>'0','۱'=>'1','۲'=>'2','۳'=>'3','۴'=>'4','۵'=>'5','۶'=>'6','۷'=>'7','۸'=>'8','۹'=>'9',
+        '٠'=>'0','١'=>'1','٢'=>'2','٣'=>'3','٤'=>'4','٥'=>'5','٦'=>'6','٧'=>'7','٨'=>'8','٩'=>'9',
+    ]);
+    $s = str_replace([',', '٫', '،'], '.', $s);
     if (preg_match('/-?[0-9]+(?:\.[0-9]+)?/', $s, $m)) {
         return (float)$m[0];
     }
@@ -153,6 +157,8 @@ function _req_statuses()
     return [
         'pending'            => 'در انتظار بررسی',
         'closed'             => 'بسته شده (غیرضروری)',
+        'rental_required'    => 'آماده ثبت قرارداد کرایه',
+        'rental_active'      => 'کرایه فعال',
         'warehouse_check'    => 'بررسی انبار',
         'purchase_required'  => 'نیاز به خرید',
         'quotation_pending'  => 'در حال جمع‌آوری قیمت‌ها',
@@ -262,6 +268,9 @@ function badge_class($s)
 {
     $map = [
         'pending' => 'text-bg-warning', 'closed' => 'text-bg-secondary',
+        'rental_required' => 'text-bg-info', 'rental_active' => 'text-bg-primary',
+        'scheduled' => 'text-bg-warning', 'active' => 'text-bg-primary',
+        'returned' => 'text-bg-success',
         'warehouse_check' => 'text-bg-info', 'purchase_required' => 'text-bg-warning',
         'quotation_pending' => 'text-bg-info', 'committee_pending' => 'text-bg-primary',
         'approved' => 'text-bg-primary', 'purchased' => 'text-bg-info',
@@ -283,6 +292,7 @@ function badge($s)
 {
     $m = _req_statuses();
     foreach (_pur_statuses() as $k => $v) { $m[$k] = $v; }
+    $m += ['scheduled'=>'در انتظار تحویل', 'active'=>'فعال', 'returned'=>'برگشت داده شده'];
     $label = $m[$s] ?? ucwords(str_replace('_', ' ', (string)$s));
     return '<span class="badge rounded-pill ' . badge_class($s) . '">' . h($label) . '</span>';
 }

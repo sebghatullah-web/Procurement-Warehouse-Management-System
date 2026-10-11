@@ -19,6 +19,7 @@ if (is_post()) {
     $emp_name = trim($old['employee_name'] ?? '');
     $emp_pos  = trim($old['employee_position'] ?? '');
     $item    = trim($old['item_name'] ?? '');
+    $request_type = ($old['request_type'] ?? 'purchase') === 'rental' ? 'rental' : 'purchase';
     $cat_id  = (int)($old['category_id'] ?? 0);
     $qty     = trim($old['quantity'] ?? '');
     $unit    = trim($old['unit'] ?? 'pcs');
@@ -28,12 +29,31 @@ if (is_post()) {
     $details = trim($old['details'] ?? '');
     $rdate   = trim($old['request_date'] ?? today());
     $ndate   = trim($old['needed_date'] ?? '');
+    $rental_duration = (float)($old['rental_duration'] ?? 0);
+    $rental_duration_unit = $old['rental_duration_unit'] ?? 'day';
+    $rental_location = trim($old['rental_location'] ?? '');
+    $operator_required = isset($old['operator_required']) ? 1 : 0;
 
     if (!$dept_id)       { $errors[] = 'لطفاً یک دیپارتمنت را انتخاب کنید.'; }
     if ($item === '')    { $errors[] = 'نام کالا الزامی است.'; }
     if ($qty === '')     { $errors[] = 'مقدار / تعداد کالا را وارد کنید.'; }
     if ($rdate === '')   { $rdate = today(); }
     if ($ndate !== '' && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $ndate)) { $errors[] = 'تاریخ مورد نیاز نامعتبر است.'; }
+    if ($request_type === 'rental') {
+        $cat_id = 0;
+        $unit = 'pcs';
+        $direct = 0;
+        if ($ndate === '') { $errors[] = 'تاریخ آغاز کرایه را مشخص کنید.'; }
+        if ($rental_duration <= 0) { $errors[] = 'مدت کرایه باید بیشتر از صفر باشد.'; }
+        if (!in_array($rental_duration_unit, ['hour','day','week','month'], true)) {
+            $errors[] = 'واحد مدت کرایه نامعتبر است.';
+        }
+    } else {
+        $rental_duration = 0;
+        $rental_duration_unit = 'day';
+        $rental_location = '';
+        $operator_required = 0;
+    }
 
     if (count($errors) === 0) {
         $prefix = 'REQ-' . date('Y') . '-';
@@ -47,10 +67,15 @@ if (is_post()) {
 
         $sql = "INSERT INTO procurement_requests
                 (request_no, department_id, category_id, item_name, quantity, unit,
+                 request_type, rental_duration, rental_duration_unit, rental_location, operator_required,
                  urgency, direct_delivery, reason, details, status, requested_by,
                  employee_name, employee_position, request_date, needed_date)
                 VALUES ('" . esc($request_no) . "', $dept_id, " . ($cat_id ? $cat_id : 'NULL') . ",
-                        '" . esc($item) . "', '" . esc($qty) . "', '" . esc($unit) . "', '$urgency', $direct,
+                        '" . esc($item) . "', '" . esc($qty) . "', '" . esc($unit) . "', '$request_type',
+                        " . ($request_type === 'rental' ? $rental_duration : 'NULL') . ",
+                        " . ($request_type === 'rental' ? "'" . esc($rental_duration_unit) . "'" : 'NULL') . ",
+                        " . ($request_type === 'rental' && $rental_location !== '' ? "'" . esc($rental_location) . "'" : 'NULL') . ",
+                        $operator_required, '$urgency', $direct,
                         '" . esc($reason) . "', $details_sql, 'pending', " . (int)$user['id'] . ",
                         '" . esc($emp_name) . "', '" . esc($emp_pos) . "', '$rdate', $ndate_sql)";
         if (exec_sql($sql)) {
@@ -127,6 +152,14 @@ require_once __DIR__ . '/../includes/header.php';
               <div class="form-text text-muted small">اول بخش و بعد دیپارتمنت مورد نیاز خود را انتخاب کنید.</div>
             </div>
             <div class="col-md-6">
+              <label class="form-label required">نوع درخواست</label>
+              <select name="request_type" id="requestType" class="form-select">
+                <option value="purchase" <?php echo ($old['request_type'] ?? 'purchase') === 'purchase' ? 'selected' : ''; ?>>خرید / تأمین</option>
+                <option value="rental" <?php echo ($old['request_type'] ?? '') === 'rental' ? 'selected' : ''; ?>>کرایه / اجاره موقت</option>
+              </select>
+              <div class="form-text">برای وسیله‌ای که پس از استفاده به مالک برگردانده می‌شود، کرایه را انتخاب کنید.</div>
+            </div>
+            <div class="col-md-6 purchase-field">
               <label class="form-label">گروه اصلی کالا</label>
               <select name="group_id" id="catGroup" class="form-select">
                 <option value="0">-- انتخاب گروه --</option>
@@ -135,7 +168,7 @@ require_once __DIR__ . '/../includes/header.php';
                 <?php endforeach; ?>
               </select>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-6 purchase-field">
               <label class="form-label">دسته‌بندی کالا</label>
               <select name="category_id" id="catSub" class="form-select">
                 <option value="0">-- انتخاب دسته‌بندی --</option>
@@ -151,13 +184,13 @@ require_once __DIR__ . '/../includes/header.php';
                      placeholder="مثلاً کیسه سیمان، صندلی اداری، کاغذ A4...">
             </div>
             <div class="col-3">
-              <label class="form-label required">مقدار / تعداد</label>
+              <label class="form-label required" id="quantityLabel">مقدار / تعداد</label>
               <input type="text" name="quantity" class="form-control" required
                      value="<?php echo h($old['quantity'] ?? ''); ?>"
-                     placeholder="مثلاً ۱۰، ۵ کیلوگرام، ۳ متر...">
-              <div class="form-text text-muted small">مقدار را بنویسید؛ واحد از فیلد واحد انتخاب می‌شود.</div>
+                     placeholder="مثلاً ۱۰، ۵ کیلوگرام، ۳ متر..." id="requestQuantity">
+              <div class="form-text text-muted small" id="quantityHelp">مقدار را بنویسید؛ واحد از فیلد واحد انتخاب می‌شود.</div>
             </div>
-            <div class="col-3">
+            <div class="col-3 purchase-field">
               <label class="form-label required">واحد</label>
               <select name="unit" class="form-select">
                 <?php foreach (['pcs','bag','ton','kg','ream','roll','liter','set','pair','box','coil','meter'] as $u): ?>
@@ -165,11 +198,34 @@ require_once __DIR__ . '/../includes/header.php';
                 <?php endforeach; ?>
               </select>
             </div>
+            <div class="col-md-4 rental-field">
+              <label class="form-label required">مدت مورد نیاز برای کرایه</label>
+              <input type="number" name="rental_duration" min="0.01" step="0.01" class="form-control"
+                     value="<?php echo h($old['rental_duration'] ?? ''); ?>">
+            </div>
+            <div class="col-md-4 rental-field">
+              <label class="form-label required">واحد مدت</label>
+              <select name="rental_duration_unit" class="form-select">
+                <?php foreach (['hour'=>'ساعت','day'=>'روز','week'=>'هفته','month'=>'ماه'] as $key => $label): ?>
+                <option value="<?php echo $key; ?>" <?php echo ($old['rental_duration_unit'] ?? 'day') === $key ? 'selected' : ''; ?>><?php echo $label; ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+            <div class="col-md-4 rental-field">
+              <label class="form-label">محل استفاده</label>
+              <input type="text" name="rental_location" class="form-control" value="<?php echo h($old['rental_location'] ?? ''); ?>" placeholder="نام پروژه / ساحه">
+            </div>
+            <div class="col-12 rental-field">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="operator_required" id="operatorRequired" <?php echo isset($old['operator_required']) ? 'checked' : ''; ?>>
+                <label class="form-check-label" for="operatorRequired">راننده / اپراتور همراه ماشین ضرورت است</label>
+              </div>
+            </div>
 
             <div class="col-12">
               <label class="form-label">جزئیات وسایل یا مواد مورد ضرورت</label>
               <textarea name="details" rows="3" class="form-control" placeholder="مثلاً کمپیوتر دل: رم ۳۲ گیگابایت، حافظه ۱ ترابایت، کور i9 نسل ۱۰، گرافیک ۸ گیگابایت و..."><?php echo h($old['details'] ?? ''); ?></textarea>
-              <div class="form-text text-muted small">مشخصات دقیق وسایل/مواد را اینجا بنویسید تا خرید دقیق‌تر انجام شود.</div>
+              <div class="form-text text-muted small">برای کرایه، مشخصات ماشین، ظرفیت و تجهیزات لازم را بنویسید.</div>
             </div>
 
             <div class="col-3">
@@ -177,11 +233,11 @@ require_once __DIR__ . '/../includes/header.php';
               <input type="date" name="request_date" class="form-control" value="<?php echo h($old['request_date'] ?? today()); ?>">
             </div>
             <div class="col-3">
-              <label class="form-label">تاریخ مورد نیاز</label>
+              <label class="form-label" id="neededDateLabel">تاریخ مورد نیاز</label>
               <input type="date" name="needed_date" class="form-control" value="<?php echo h($old['needed_date'] ?? ''); ?>">
-              <div class="form-text text-muted small">تاریخی که وسایل یا مواد باید تا آن‌موقع برسد.</div>
+              <div class="form-text text-muted small" id="neededDateHelp">برای کرایه، تاریخ آغاز استفاده را وارد کنید.</div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-6 purchase-field">
               <label class="form-label">فوریت</label>
               <select name="urgency" class="form-select">
                 <option value="normal" <?php echo ($old['urgency'] ?? 'normal') === 'normal' ? 'selected' : ''; ?>>عادی (قیمت + کمیته)</option>
@@ -189,7 +245,7 @@ require_once __DIR__ . '/../includes/header.php';
               </select>
               <div class="form-text text-muted small">درخواست‌های فوری مراحل قیمت‌گیری و کمیته را رد می‌کنند.</div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-6 purchase-field">
               <div class="form-check form-switch mt-4">
                 <input class="form-check-input" type="checkbox" id="direct" name="direct_delivery" <?php echo isset($old['direct_delivery']) ? 'checked' : ''; ?>>
                 <label class="form-check-label" for="direct">تحویل مستقیم (در انبار نگهداری نشود)</label>
@@ -216,8 +272,9 @@ require_once __DIR__ . '/../includes/header.php';
           <li>تدارکات درخواست شما را بررسی می‌کند.</li>
           <li>در صورت لزوم، انبار موجودی را بررسی می‌کند.</li>
           <li>موجود بود &rarr; وسایل یا مواد تحویل داده می‌شود؛ در غیر این صورت خرید شروع می‌شود.</li>
-          <li>درخواست‌های عادی به <strong>3 قیمت از تأمین‌کنندگان</strong> و تأیید کمیته نیاز دارند؛ درخواست‌های فوری مستقیماً به خرید می‌روند.</li>
-          <li>محصوالت ورودی در <strong>گیت</strong> بررسی می‌شوند، سپس ذخیره یا مستقیم تحویل داده می‌شوند.</li>
+          <li>در خرید عادی حداقل <strong>3 قیمت از تأمین‌کنندگان</strong> و تأیید کمیته لازم است؛ خرید فوری مستقیماً به سفارش می‌رود.</li>
+          <li>کرایه پس از منظوری وارد قرارداد جداگانه می‌شود، تحویل و برگشت آن ثبت می‌گردد و به موجودی انبار افزوده نمی‌شود.</li>
+          <li>کالاهای خریداری‌شده در <strong>گیت</strong> بررسی می‌شوند، سپس ذخیره یا مستقیم تحویل داده می‌شوند.</li>
         </ol>
       </div>
     </div>
@@ -225,6 +282,26 @@ require_once __DIR__ . '/../includes/header.php';
 </div>
 <script>
 (function () {
+  var type = document.getElementById('requestType');
+  function syncRequestType() {
+    var rental = type && type.value === 'rental';
+    document.querySelectorAll('.rental-field').forEach(function (el) { el.hidden = !rental; });
+    document.querySelectorAll('.purchase-field').forEach(function (el) { el.hidden = rental; });
+    var duration = document.querySelector('[name="rental_duration"]');
+    var date = document.querySelector('[name="needed_date"]');
+    if (duration) duration.required = rental;
+    if (date) date.required = rental;
+    var label = document.getElementById('neededDateLabel');
+    if (label) label.textContent = rental ? 'تاریخ آغاز کرایه' : 'تاریخ مورد نیاز';
+    var quantity = document.getElementById('requestQuantity');
+    var quantityHelp = document.getElementById('quantityHelp');
+    if (quantity) quantity.placeholder = rental ? 'مثلاً ۲ دستگاه ماشین‌آلات' : 'مثلاً ۱۰، ۵ کیلوگرام، ۳ متر...';
+    if (quantityHelp) quantityHelp.textContent = rental ? 'تعداد ماشین‌ها یا وسایل مورد نیاز را وارد کنید.' : 'مقدار را بنویسید؛ واحد از فیلد واحد انتخاب می‌شود.';
+  }
+  if (type) {
+    type.addEventListener('change', syncRequestType);
+    syncRequestType();
+  }
   /* منوهای وابسته: بخش ← دیپارتمنت، گروه ← دسته‌بندی */
   function bindSub(branchId, subId, firstIfMissing) {
     var b = document.getElementById(branchId), s = document.getElementById(subId);

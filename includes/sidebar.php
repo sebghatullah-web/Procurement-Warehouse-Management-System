@@ -50,6 +50,11 @@ function sidebar_link($href, $icon, $label, $sep = false)
   <a class="nav-link" href="<?php echo $base; ?>/suppliers/list.php"><i class="bi bi-truck"></i><span>تأمین‌کنندگان</span></a>
   <?php endif; ?>
 
+  <?php if (in_array($role, ['procurement_manager','warehouse_manager','finance','general_manager','admin'], true)): ?>
+  <div class="nav-title">کرایه تجهیزات</div>
+  <a class="nav-link" href="<?php echo $base; ?>/rentals/list.php"><i class="bi bi-truck-flatbed"></i><span>قراردادهای کرایه</span></a>
+  <?php endif; ?>
+
   <?php if ($role === 'warehouse_manager' || $isA): ?>
   <div class="nav-title">انبار</div>
   <a class="nav-link" href="<?php echo $base; ?>/warehouse/inventory.php"><i class="bi bi-boxes"></i><span>موجودی انبار</span></a>

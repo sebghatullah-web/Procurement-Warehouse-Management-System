@@ -29,7 +29,9 @@ if (is_post()) {
     $valid  = ['approve', 'close'];
     if (!in_array($action, $valid, true)) { $errors[] = 'عملیات نامعتبر.'; }
     if (count($errors) === 0) {
-        $to = ($action === 'approve') ? 'warehouse_check' : 'closed';
+        $to = ($action === 'approve')
+            ? (($r['request_type'] ?? 'purchase') === 'rental' ? 'rental_required' : 'warehouse_check')
+            : 'closed';
         $ok = exec_sql("UPDATE procurement_requests SET status='$to',
                         reviewed_by=" . (int)$user['id'] . ",
                         review_note='" . esc($note) . "', reviewed_at=NOW() WHERE id=$id");
@@ -48,10 +50,11 @@ require_once __DIR__ . '/../includes/header.php';
   <div class="card-header"><i class="bi bi-check2-circle me-2"></i>بررسی <?php echo h($r['request_no']); ?></div>
   <div class="card-body">
     <div class="row mb-2">
-      <div class="col-md-3"><strong>اداره</strong><br><?php echo h($r['dept']); ?></div>
-      <div class="col-md-3"><strong>کالا</strong><br><?php echo h($r['item_name']); ?></div>
+      <div class="col-md-2"><strong>اداره</strong><br><?php echo h($r['dept']); ?></div>
+      <div class="col-md-2"><strong>نوع درخواست</strong><br><?php echo ($r['request_type'] ?? 'purchase') === 'rental' ? 'کرایه' : 'خرید'; ?></div>
+      <div class="col-md-3"><strong>کالا / وسیله</strong><br><?php echo h($r['item_name']); ?></div>
       <div class="col-md-2"><strong>تعداد</strong><br><?php echo h($r['quantity']); ?> <?php echo h(unit_label($r['unit'])); ?></div>
-      <div class="col-md-2"><strong>فوریت</strong><br><?php echo badge($r['urgency']); ?></div>
+      <div class="col-md-1"><strong>فوریت</strong><br><?php echo badge($r['urgency']); ?></div>
       <div class="col-md-2"><strong>کارمند</strong><br><?php echo h($r['employee_name'] ?? $r['requester']); ?></div>
     </div>
     <div class="small text-muted mb-3">
@@ -74,11 +77,15 @@ require_once __DIR__ . '/../includes/header.php';
         <div class="card border-success-subtle h-100">
           <div class="card-header text-success">تأیید - ضروری است</div>
           <div class="card-body small">
-            درخواست را برای بررسی موجودی به <strong>مدیر انبار</strong> ارسال می‌کند.
+            <?php if (($r['request_type'] ?? 'purchase') === 'rental'): ?>
+            درخواست کرایه را تأیید می‌کند تا به بخش قراردادهای کرایه فرستاده شود؛ این وسیله وارد موجودی انبار نمی‌شود.
+            <?php else: ?>
+            درخواست خرید را برای بررسی موجودی به <strong>مدیر انبار</strong> ارسال می‌کند.
+            <?php endif; ?>
             <form method="post">
               <input type="hidden" name="action" value="approve">
               <div class="mb-2"><textarea name="review_note" rows="2" class="form-control" placeholder="یادداشت اختیاری برای انبار (پیشنهاد)"></textarea></div>
-              <button class="btn btn-success w-100" type="submit"><i class="bi bi-check2 me-1"></i>تأیید و ارسال به انبار</button>
+              <button class="btn btn-success w-100" type="submit"><i class="bi bi-check2 me-1"></i><?php echo ($r['request_type'] ?? 'purchase') === 'rental' ? 'تأیید و ارسال به کرایه' : 'تأیید و ارسال به انبار'; ?></button>
             </form>
           </div>
         </div>

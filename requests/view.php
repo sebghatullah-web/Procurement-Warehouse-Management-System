@@ -31,6 +31,7 @@ $page_title = 'درخواست ' . $r['request_no'];
 $purchases   = fetch_all("SELECT p.*, s.name supplier FROM purchases p
                           LEFT JOIN suppliers s ON s.id=p.supplier_id
                           WHERE p.request_id = $id ORDER BY p.id DESC");
+$rental = fetch_one("SELECT * FROM rental_contracts WHERE request_id=$id");
 $quotations  = fetch_all("SELECT q.*, s.name supplier FROM quotations q
                           JOIN suppliers s ON s.id=q.supplier_id
                           WHERE q.request_id = $id ORDER BY q.price ASC");
@@ -60,10 +61,16 @@ require_once __DIR__ . '/../includes/header.php';
           <div class="col-md-4"><div class="text-muted small">تاریخ درخواست</div><div class="fw-semibold"><?php echo h($r['request_date']); ?></div></div>
           <div class="col-md-4"><div class="text-muted small">تاریخ مورد نیاز</div><div class="fw-semibold"><?php echo h($r['needed_date'] ?? '—'); ?></div></div>
           <div class="col-md-4"><div class="text-muted small">کالا</div><div class="fw-semibold"><?php echo h($r['item_name']); ?></div></div>
+          <div class="col-md-4"><div class="text-muted small">نوع درخواست</div><div class="fw-semibold"><?php echo ($r['request_type'] ?? 'purchase') === 'rental' ? 'کرایه موقت' : 'خرید / تأمین'; ?></div></div>
           <div class="col-md-4"><div class="text-muted small">تعداد</div><div class="fw-semibold"><?php echo h($r['quantity']); ?> <?php echo h(unit_label($r['unit'])); ?></div></div>
           <div class="col-md-4"><div class="text-muted small">فوریت</div><?php echo badge($r['urgency']); ?></div>
           <div class="col-md-4"><div class="text-muted small">کارمند / درخواست‌کننده</div><div class="fw-semibold"><?php $en = trim($r['employee_name'] ?? ''); echo h($en !== '' ? $en : $r['requester']); ?><?php if (trim($r['employee_position'] ?? '') !== ''): ?> <span class="text-muted small">(<?php echo h($r['employee_position']); ?>)</span><?php endif; ?></div></div>
           <div class="col-md-4"><div class="text-muted small">تحویل مستقیم</div><div class="fw-semibold"><?php echo $r['direct_delivery'] ? 'بله' : 'خیر'; ?></div></div>
+          <?php if (($r['request_type'] ?? 'purchase') === 'rental'): ?>
+          <div class="col-md-4"><div class="text-muted small">مدت کرایه درخواستی</div><div class="fw-semibold"><?php echo $r['rental_duration'] ? xnum($r['rental_duration']) . ' ' . h(['hour'=>'ساعت','day'=>'روز','week'=>'هفته','month'=>'ماه'][$r['rental_duration_unit']]) : '—'; ?></div></div>
+          <div class="col-md-4"><div class="text-muted small">محل استفاده</div><div class="fw-semibold"><?php echo h($r['rental_location'] ?? '—'); ?></div></div>
+          <div class="col-md-4"><div class="text-muted small">اپراتور لازم است</div><div class="fw-semibold"><?php echo $r['operator_required'] ? 'بله' : 'خیر'; ?></div></div>
+          <?php endif; ?>
           <div class="col-md-4"><div class="text-muted small">بررسی‌کننده</div><div class="fw-semibold"><?php echo h($r['reviewer'] ?? '—'); ?></div></div>
         </div>
         <div class="mt-3">
@@ -102,20 +109,22 @@ require_once __DIR__ . '/../includes/header.php';
           <?php if ($r['status'] !== 'pending' && $r['status'] !== 'closed'): ?>
           <li>بررسی و تأیید شده توسط تدارکات</li>
           <?php endif; ?>
-          <?php if (in_array($r['status'], ['purchase_required','quotation_pending','committee_pending','approved','supplier_selected','authority_approved','financed','purchased','received','completed'], true)): ?>
+          <?php if (($r['request_type'] ?? 'purchase') === 'rental' && in_array($r['status'], ['rental_required','rental_active','completed'], true)): ?>
+          <li>درخواست کرایه تأیید شده و در مسیر قرارداد و برگشت وسیله است.</li>
+          <?php elseif (in_array($r['status'], ['purchase_required','quotation_pending','committee_pending','approved','supplier_selected','authority_approved','financed','purchased','received','completed'], true)): ?>
           <li>در انبار موجود نیست - فرآیند خرید شروع شد</li>
           <?php endif; ?>
           <?php if ($r['status'] === 'closed'): ?><li class="text-danger">بسته شده به‌عنوان غیرضروری</li><?php endif; ?>
-          <?php if (in_array($r['status'], ['quotation_pending','committee_pending','approved','supplier_selected','authority_approved','financed','purchased','received','completed'], true)): ?>
+          <?php if (($r['request_type'] ?? 'purchase') === 'purchase' && in_array($r['status'], ['quotation_pending','committee_pending','approved','supplier_selected','authority_approved','financed','purchased','received','completed'], true)): ?>
           <li>قیمت‌ها جمع‌آوری شد؛ تأیید کمیته لازم است</li>
           <?php endif; ?>
-          <?php if (in_array($r['status'], ['supplier_selected','authority_approved','financed'], true)): ?>
+          <?php if (($r['request_type'] ?? 'purchase') === 'purchase' && in_array($r['status'], ['supplier_selected','authority_approved','financed'], true)): ?>
           <li>تصویب ریاست شرکت و تأمین هزینه توسط بخش مالی در جریان است</li>
           <?php endif; ?>
-          <?php if (in_array($r['status'], ['purchased','received','completed'], true)): ?>
+          <?php if (($r['request_type'] ?? 'purchase') === 'purchase' && in_array($r['status'], ['purchased','received','completed'], true)): ?>
           <li>کالا از تأمین‌کننده نهایی سفارش داده شد</li>
           <?php endif; ?>
-          <?php if (in_array($r['status'], ['received','completed'], true)): ?>
+          <?php if (($r['request_type'] ?? 'purchase') === 'purchase' && in_array($r['status'], ['received','completed'], true)): ?>
           <li>در گیت دریافت و تأیید شد</li>
           <?php endif; ?>
           <?php if ($r['status'] === 'completed'): ?><li class="text-success"><strong>&#10003; تکمیل شد</strong></li><?php endif; ?>
@@ -129,6 +138,10 @@ require_once __DIR__ . '/../includes/header.php';
             <a class="btn btn-primary w-100" href="<?php echo $base; ?>/warehouse/check.php?request_id=<?php echo $r['id']; ?>"><i class="bi bi-upc-scan me-1"></i>بررسی انبار</a>
           <?php elseif ($r['status'] === 'purchase_required' && ($role === 'procurement_manager' || $role === 'admin')): ?>
             <a class="btn btn-primary w-100" href="<?php echo $base; ?>/purchases/create.php?request_id=<?php echo $r['id']; ?>"><i class="bi bi-cart-plus me-1"></i>شروع فرآیند خرید</a>
+          <?php elseif (($r['request_type'] ?? 'purchase') === 'rental' && $r['status'] === 'rental_required' && ($role === 'procurement_manager' || $role === 'admin')): ?>
+            <a class="btn btn-primary w-100" href="<?php echo $base; ?>/rentals/create.php?request_id=<?php echo $r['id']; ?>"><i class="bi bi-file-earmark-text me-1"></i>ثبت قرارداد کرایه</a>
+          <?php elseif (($r['request_type'] ?? 'purchase') === 'rental' && $rental): ?>
+            <a class="btn btn-outline-primary w-100" href="<?php echo $base; ?>/rentals/view.php?id=<?php echo (int)$rental['id']; ?>"><i class="bi bi-truck me-1"></i>مشاهده قرارداد <?php echo h($rental['rental_no']); ?></a>
           <?php elseif ($p0 && in_array($r['status'], ['quotation_pending','committee_pending','approved','supplier_selected','authority_approved','financed','purchased','received','completed'], true)): ?>
             <a class="btn btn-outline-primary w-100" href="<?php echo $base; ?>/purchases/view.php?id=<?php echo $p0['id']; ?>"><i class="bi bi-cart-check me-1"></i>باز کردن خرید #<?php echo h($p0['purchase_no']); ?></a>
             <?php if ($r['status'] === 'purchased' && ($role === 'gate_security' || $role === 'admin')): ?>
@@ -145,6 +158,24 @@ require_once __DIR__ . '/../includes/header.php';
     </div>
   </div>
 </div>
+<?php if (($r['request_type'] ?? 'purchase') === 'rental'): ?>
+<div class="card mb-3">
+  <div class="card-header"><i class="bi bi-truck me-2"></i>گردش کرایه</div>
+  <div class="card-body">
+    <?php if ($rental): ?>
+      <div class="row g-2">
+        <div class="col-md-3"><strong>قرارداد:</strong> <a href="<?php echo $base; ?>/rentals/view.php?id=<?php echo (int)$rental['id']; ?>"><?php echo h($rental['rental_no']); ?></a></div>
+        <div class="col-md-3"><strong>مالک:</strong> <?php echo h($rental['supplier_name']); ?></div>
+        <div class="col-md-3"><strong>مدت:</strong> <?php echo h($rental['start_date']); ?> تا <?php echo h($rental['actual_return_date'] ?: $rental['planned_end_date']); ?></div>
+        <div class="col-md-3"><strong>کرایه:</strong> <?php echo money_cur($rental['rate_amount'], $rental['currency']); ?> / <?php echo h(['hour'=>'ساعت','day'=>'روز','week'=>'هفته','month'=>'ماه'][$rental['rate_unit']]); ?></div>
+      </div>
+      <div class="mt-2"><?php echo badge($rental['status']); ?></div>
+    <?php else: ?>
+      <span class="text-muted">قرارداد هنوز ثبت نشده است. پس از منظوری تدارکات، قرارداد در بخش کرایه ایجاد می‌شود.</span>
+    <?php endif; ?>
+  </div>
+</div>
+<?php else: ?>
 <div class="card mb-3">
   <div class="card-header"><i class="bi bi-cart-check me-2"></i>رکوردهای خرید</div>
   <div class="table-responsive">
@@ -165,6 +196,7 @@ require_once __DIR__ . '/../includes/header.php';
     </table>
   </div>
 </div>
+<?php endif; ?>
 
 <?php if (count($quotations) > 0): ?>
 <div class="card mb-3">
