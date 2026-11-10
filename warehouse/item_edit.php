@@ -85,8 +85,8 @@ require_once __DIR__ . '/../includes/header.php';
         <div class="col-md-3">
           <label class="form-label required">واحد</label>
           <select name="unit" class="form-select">
-            <?php foreach (['pcs','bag','ton','kg','ream','roll','liter','set','pair','box','coil','meter'] as $u): ?>
-            <option value="<?php echo $u; ?>" <?php echo ($id > 0 ? $item['unit'] : ($old['unit'] ?? 'pcs')) === $u ? 'selected' : ''; ?>><?php echo unit_label($u); ?></option>
+            <?php foreach (_units() as $u => $label): ?>
+            <option value="<?php echo h($u); ?>" <?php echo ($id > 0 ? $item['unit'] : ($old['unit'] ?? 'pcs')) === $u ? 'selected' : ''; ?>><?php echo h($label); ?></option>
             <?php endforeach; ?>
           </select>
         </div>

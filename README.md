@@ -26,8 +26,8 @@ Other seeded demo usernames are `procurement`, `warehouse`, `gate`, `committee`,
 
 ### Existing installations
 
-For an existing database, apply the required upgrade scripts in order, ending with `database/upgrade_v8.sql` after `upgrade_v7.sql`. Back up the database before applying upgrades. The installer creates all workflow tables automatically for a fresh installation.
-On XAMPP, run the applicable upgrade from Command Prompt, for example: `C:\xampp\mysql\bin\mysql.exe -u root procurement_warehouse_ms < C:\xampp\htdocs\ProcurementWarehouseMS\database\upgrade_v8.sql`.
+For an existing database, apply the required upgrade scripts in order, ending with `database/upgrade_v9.sql` after `upgrade_v8.sql`. Back up the database before applying upgrades. The installer creates all workflow tables automatically for a fresh installation.
+On XAMPP, run the applicable upgrade from Command Prompt, for example: `C:\xampp\mysql\bin\mysql.exe -u root procurement_warehouse_ms < C:\xampp\htdocs\ProcurementWarehouseMS\database\upgrade_v9.sql`.
 After upgrading an existing database, use **Admin → Users** to create or assign a user the new **Contracting Department Reviewer** role; fresh installs seed a demo `contracting` account with password `password`.
 
 `database/procurement_warehouse.sql` is the schema and seed script used by the installer. `database/procurement_warehouse_ms.sql` is a separate SQL dump and is not loaded by the installer; use it only when intentionally restoring that dump.
@@ -39,7 +39,8 @@ ProcurementWarehouseMS/
 ├── database/
 │   ├── procurement_warehouse.sql
 │   ├── procurement_warehouse_ms.sql
-│   └── upgrade_v8.sql
+│   ├── upgrade_v8.sql
+│   └── upgrade_v9.sql
 ├── includes/
 │   ├── auth.php
 │   ├── config.php

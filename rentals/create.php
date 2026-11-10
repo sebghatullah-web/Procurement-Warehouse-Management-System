@@ -21,6 +21,8 @@ $errors = [];
 $old = $_POST;
 if (is_post()) {
     $supplier = trim($old['supplier_name'] ?? '');
+    $supplier_tazkira_no = trim($old['supplier_tazkira_no'] ?? '');
+    $case_no = trim($old['case_no'] ?? '');
     $contact = trim($old['supplier_contact'] ?? '');
     $phone = trim($old['supplier_phone'] ?? '');
     $start = trim($old['start_date'] ?? '');
@@ -60,11 +62,13 @@ if (is_post()) {
         $number = $last ? (int)substr($last['rental_no'], strlen($prefix)) + 1 : 1;
         $rental_no = $prefix . str_pad($number, 4, '0', STR_PAD_LEFT);
         $sql = "INSERT INTO rental_contracts
-                (rental_no, request_id, supplier_name, supplier_contact, supplier_phone,
+                (rental_no, request_id, supplier_name, supplier_tazkira_no, case_no, supplier_contact, supplier_phone,
                  equipment_name, equipment_details, quantity, rate_amount, rate_unit, currency,
                  deposit_amount, start_date, planned_end_date, rental_location, operator_included,
                  operator_name, fuel_responsibility, maintenance_responsibility, notes, created_by)
                 VALUES ('" . esc($rental_no) . "', $request_id, '" . esc($supplier) . "',
+                        " . ($supplier_tazkira_no !== '' ? "'" . esc($supplier_tazkira_no) . "'" : 'NULL') . ",
+                        " . ($case_no !== '' ? "'" . esc($case_no) . "'" : 'NULL') . ",
                         " . ($contact !== '' ? "'" . esc($contact) . "'" : 'NULL') . ",
                         " . ($phone !== '' ? "'" . esc($phone) . "'" : 'NULL') . ",
                         '" . esc($request['item_name']) . "', " . ($request['details'] ? "'" . esc($request['details']) . "'" : 'NULL') . ",
@@ -101,6 +105,8 @@ require_once __DIR__ . '/../includes/header.php';
     <?php if (count($errors)): ?><div class="alert alert-danger"><?php foreach ($errors as $e): ?><div><?php echo h($e); ?></div><?php endforeach; ?></div><?php endif; ?>
     <form method="post" class="row g-3">
       <div class="col-md-4"><label class="form-label required">مالک / تأمین‌کننده</label><input class="form-control" name="supplier_name" required value="<?php echo h($old['supplier_name'] ?? ''); ?>"></div>
+      <div class="col-md-4"><label class="form-label">شماره تذکره مالک</label><input class="form-control" name="supplier_tazkira_no" maxlength="100" value="<?php echo h($old['supplier_tazkira_no'] ?? ''); ?>"></div>
+      <div class="col-md-4"><label class="form-label">شماره دوسیه</label><input class="form-control" name="case_no" maxlength="100" value="<?php echo h($old['case_no'] ?? ''); ?>"></div>
       <div class="col-md-4"><label class="form-label">شخص تماس</label><input class="form-control" name="supplier_contact" value="<?php echo h($old['supplier_contact'] ?? ''); ?>"></div>
       <div class="col-md-4"><label class="form-label">شماره تماس</label><input class="form-control" name="supplier_phone" value="<?php echo h($old['supplier_phone'] ?? ''); ?>"></div>
       <div class="col-md-3"><label class="form-label required">تعداد ماشین / وسیله</label><input type="number" name="quantity" min="0.01" step="0.01" required class="form-control" value="<?php echo h($old['quantity'] ?? qty_num($request['quantity'])); ?>"></div>

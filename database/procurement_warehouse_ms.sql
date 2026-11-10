@@ -358,6 +358,8 @@ CREATE TABLE `rental_contracts` (
   `rental_no` varchar(30) NOT NULL,
   `request_id` int(10) UNSIGNED NOT NULL,
   `supplier_name` varchar(150) NOT NULL,
+  `supplier_tazkira_no` varchar(100) DEFAULT NULL,
+  `case_no` varchar(100) DEFAULT NULL,
   `supplier_contact` varchar(100) DEFAULT NULL,
   `supplier_phone` varchar(30) DEFAULT NULL,
   `equipment_name` varchar(150) NOT NULL,

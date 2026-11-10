@@ -228,6 +228,8 @@ CREATE TABLE `rental_contracts` (
   `rental_no` VARCHAR(30) NOT NULL UNIQUE,
   `request_id` INT UNSIGNED NOT NULL UNIQUE,
   `supplier_name` VARCHAR(150) NOT NULL,
+  `supplier_tazkira_no` VARCHAR(100) NULL,
+  `case_no` VARCHAR(100) NULL,
   `supplier_contact` VARCHAR(100) NULL,
   `supplier_phone` VARCHAR(30) NULL,
   `equipment_name` VARCHAR(150) NOT NULL,

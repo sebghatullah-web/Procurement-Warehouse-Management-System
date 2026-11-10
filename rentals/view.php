@@ -151,6 +151,8 @@ require_once __DIR__ . '/../includes/header.php';
     <div class="row g-3">
       <div class="col-md-3"><div class="text-muted small">درخواست / اداره</div><a href="<?php echo $base; ?>/requests/view.php?id=<?php echo (int)$rental['request_id']; ?>"><?php echo h($rental['request_no']); ?></a><div><?php echo h($rental['department']); ?></div></div>
       <div class="col-md-3"><div class="text-muted small">مالک / تأمین‌کننده</div><strong><?php echo h($rental['supplier_name']); ?></strong><div><?php echo h($rental['supplier_phone'] ?? ''); ?></div></div>
+      <div class="col-md-3"><div class="text-muted small">شماره تذکره مالک</div><?php echo h($rental['supplier_tazkira_no'] ?? '—'); ?></div>
+      <div class="col-md-3"><div class="text-muted small">شماره دوسیه</div><?php echo h($rental['case_no'] ?? '—'); ?></div>
       <div class="col-md-3"><div class="text-muted small">مدت قرارداد</div><?php echo h($rental['start_date']); ?> تا <?php echo h($rental['actual_return_date'] ?: $rental['planned_end_date']); ?><?php if ($rental['status'] === 'active' && $rental['planned_end_date'] < today()): ?><div class="text-danger fw-semibold">از موعد برگشت گذشته است</div><?php endif; ?></div>
       <div class="col-md-3"><div class="text-muted small">کرایه</div><strong><?php echo money_cur($rental['rate_amount'], $rental['currency']); ?></strong> / <?php echo h(['hour'=>'ساعت','day'=>'روز','week'=>'هفته','month'=>'ماه'][$rental['rate_unit']]); ?><div class="small">تضمین: <?php echo money_cur($rental['deposit_amount'], $rental['currency']); ?></div></div>
       <div class="col-md-3"><div class="text-muted small">تعداد / محل</div><?php echo xnum($rental['quantity']); ?> — <?php echo h($rental['rental_location'] ?? '—'); ?></div>
