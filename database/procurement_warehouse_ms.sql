@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.1
+-- version 5.2.0
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 11, 2026 at 07:41 AM
--- Server version: 10.4.32-MariaDB
--- PHP Version: 8.2.12
+-- Generation Time: Nov 19, 2026 at 07:50 AM
+-- Server version: 10.4.27-MariaDB
+-- PHP Version: 8.2.0
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -147,15 +147,15 @@ CREATE TABLE `consumptions` (
 --
 
 INSERT INTO `consumptions` (`id`, `item_id`, `request_id`, `purchase_id`, `department_id`, `item_name`, `category_id`, `quantity`, `unit`, `source`, `handover_no`, `receiver_name`, `receiver_position`, `receiver_user_id`, `receiver_confirmed`, `confirmed_at`, `handover_note`, `delivery_date`, `delivered_by`, `notes`, `created_at`) VALUES
-(1, 1, NULL, NULL, 1, 'سیمان (کیسه ۵۰ کیلویی لکی)', 8, 100.00, 'bag', 'warehouse', NULL, NULL, NULL, NULL, 1, '2026-01-06 00:00:00', NULL, '2026-01-06', 3, 'صادر شده برای کار فونداسیون', '2026-09-24 08:19:01'),
-(2, NULL, NULL, NULL, 5, 'کانتینر فولادی ۲۰ فوت', 2, 1.00, 'pcs', 'direct', NULL, NULL, NULL, NULL, 1, '2026-02-20 00:00:00', NULL, '2026-02-20', 3, 'تحویل مستقیم هنگام خرید', '2026-09-24 08:19:01'),
-(3, 3, NULL, NULL, 2, 'بسته کاغذ A4', 5, 30.00, 'ream', 'warehouse', NULL, NULL, NULL, NULL, 1, '2026-03-02 00:00:00', NULL, '2026-03-02', 3, 'صدور فصلی', '2026-09-24 08:19:01'),
-(4, NULL, NULL, NULL, 4, 'کلاه ایمنی', 10, 25.00, 'pcs', 'direct', NULL, NULL, NULL, NULL, 1, '2026-04-18 00:00:00', NULL, '2026-04-18', 3, 'تحویل مستقیم هنگام خرید', '2026-09-24 08:19:01'),
-(5, NULL, NULL, NULL, 7, 'دریل کارگاه', 7, 2.00, 'pcs', 'direct', NULL, NULL, NULL, NULL, 1, '2026-05-21 00:00:00', NULL, '2026-05-21', 3, 'تحویل مستقیم هنگام خرید', '2026-09-24 08:19:01'),
-(6, 1, NULL, NULL, 1, 'سیمان (کیسه ۵۰ کیلویی لکی)', 8, 200.00, 'bag', 'warehouse', NULL, NULL, NULL, NULL, 1, '2025-11-04 00:00:00', NULL, '2025-11-04', 3, 'فونداسیون بلوک برج', '2026-09-24 08:19:01'),
-(7, NULL, NULL, NULL, 5, 'کانتینر فولادی ۲۰ فوت', 2, 1.00, 'pcs', 'direct', NULL, NULL, NULL, NULL, 1, '2025-12-20 00:00:00', NULL, '2025-12-20', 3, 'تحویل مستقیم هنگام خرید', '2026-09-24 08:19:01'),
-(8, 11, 14, 7, 2, 'UPS Unit', NULL, 2.00, 'pcs', 'warehouse', 'HND-2026-0001', 'Test Receiver', 'Engineer', 7, 1, '2026-09-27 09:02:38', NULL, '2026-09-27', 3, 'test e2e', '2026-09-27 04:31:39'),
-(9, NULL, 16, 9, 2, 'کمپیوتر', 9, 2.00, 'pcs', 'direct', 'HND-2026-0002', 'بهادری', 'کارمند ای تی', 3, 1, '2026-09-27 10:25:55', NULL, '2026-09-27', 3, 'وسایل درخواست شده به آقای بهادری تحویل داده شد.', '2026-09-27 05:55:26');
+(1, 1, NULL, NULL, 1, 'سیمان (کیسه ۵۰ کیلویی لکی)', 8, '100.00', 'bag', 'warehouse', NULL, NULL, NULL, NULL, 1, '2026-01-06 00:00:00', NULL, '2026-01-06', 3, 'صادر شده برای کار فونداسیون', '2026-09-24 08:19:01'),
+(2, NULL, NULL, NULL, 5, 'کانتینر فولادی ۲۰ فوت', 2, '1.00', 'pcs', 'direct', NULL, NULL, NULL, NULL, 1, '2026-02-20 00:00:00', NULL, '2026-02-20', 3, 'تحویل مستقیم هنگام خرید', '2026-09-24 08:19:01'),
+(3, 3, NULL, NULL, 2, 'بسته کاغذ A4', 5, '30.00', 'ream', 'warehouse', NULL, NULL, NULL, NULL, 1, '2026-03-02 00:00:00', NULL, '2026-03-02', 3, 'صدور فصلی', '2026-09-24 08:19:01'),
+(4, NULL, NULL, NULL, 4, 'کلاه ایمنی', 10, '25.00', 'pcs', 'direct', NULL, NULL, NULL, NULL, 1, '2026-04-18 00:00:00', NULL, '2026-04-18', 3, 'تحویل مستقیم هنگام خرید', '2026-09-24 08:19:01'),
+(5, NULL, NULL, NULL, 7, 'دریل کارگاه', 7, '2.00', 'pcs', 'direct', NULL, NULL, NULL, NULL, 1, '2026-05-21 00:00:00', NULL, '2026-05-21', 3, 'تحویل مستقیم هنگام خرید', '2026-09-24 08:19:01'),
+(6, 1, NULL, NULL, 1, 'سیمان (کیسه ۵۰ کیلویی لکی)', 8, '200.00', 'bag', 'warehouse', NULL, NULL, NULL, NULL, 1, '2025-11-04 00:00:00', NULL, '2025-11-04', 3, 'فونداسیون بلوک برج', '2026-09-24 08:19:01'),
+(7, NULL, NULL, NULL, 5, 'کانتینر فولادی ۲۰ فوت', 2, '1.00', 'pcs', 'direct', NULL, NULL, NULL, NULL, 1, '2025-12-20 00:00:00', NULL, '2025-12-20', 3, 'تحویل مستقیم هنگام خرید', '2026-09-24 08:19:01'),
+(8, 11, 14, 7, 2, 'UPS Unit', NULL, '2.00', 'pcs', 'warehouse', 'HND-2026-0001', 'Test Receiver', 'Engineer', 7, 1, '2026-09-27 09:02:38', NULL, '2026-09-27', 3, 'test e2e', '2026-09-27 04:31:39'),
+(9, NULL, 16, 9, 2, 'کمپیوتر', 9, '2.00', 'pcs', 'direct', 'HND-2026-0002', 'بهادری', 'کارمند ای تی', 3, 1, '2026-09-27 10:25:55', NULL, '2026-09-27', 3, 'وسایل درخواست شده به آقای بهادری تحویل داده شد.', '2026-09-27 05:55:26');
 
 -- --------------------------------------------------------
 
@@ -219,8 +219,8 @@ CREATE TABLE `gate_checklists` (
 --
 
 INSERT INTO `gate_checklists` (`id`, `purchase_id`, `received_by`, `quantity_received`, `condition_ok`, `remarks`, `check_date`) VALUES
-(6, 7, 4, 1.00, 1, 'سالم هستند', '2026-09-26 16:16:27'),
-(7, 9, 4, 2.00, 1, 'سالم هستند', '2026-09-27 10:22:56');
+(6, 7, 4, '1.00', 1, 'سالم هستند', '2026-09-26 16:16:27'),
+(7, 9, 4, '2.00', 1, 'سالم هستند', '2026-09-27 10:22:56');
 
 -- --------------------------------------------------------
 
@@ -266,7 +266,11 @@ CREATE TABLE `procurement_requests` (
 INSERT INTO `procurement_requests` (`id`, `request_no`, `department_id`, `category_id`, `item_name`, `quantity`, `unit`, `request_type`, `rental_duration`, `rental_duration_unit`, `rental_location`, `operator_required`, `urgency`, `direct_delivery`, `reason`, `details`, `status`, `requested_by`, `employee_name`, `employee_position`, `reviewed_by`, `review_note`, `reviewed_at`, `warehouse_note`, `request_date`, `needed_date`, `created_at`, `updated_at`) VALUES
 (14, 'REQ-2026-0001', 2, 9, 'پرینتر 6 رنگه همه کاره', '1', 'pcs', 'purchase', NULL, NULL, NULL, 0, 'normal', 1, 'بخش ای تی نظر به پیش برد کار های خویش نیاز به یک پرینتر 6 رنگه همه کاره دارد.', 'epson l8100', 'completed', 7, 'صبغت الله', 'بخش آی تی', 2, 'درخواست فوق را دارید یا خیر؟', '2026-09-26 16:02:56', 'کالا مورد ضرورت در انبار موجود نیست.', '2026-09-26', '2026-10-06', '2026-09-26 11:30:24', '2026-09-27 04:31:39'),
 (16, 'REQ-2026-0002', 2, 9, 'کمپیوتر', '2', 'pcs', 'purchase', NULL, NULL, NULL, 0, 'normal', 1, 'نظر به پیش برد کاری های خویش بخش ای تی دو کمپیوتر های فوق را ضرورت دارد.', 'کمپیوتر دل، رم 32 گیگا بایت، کور i9، نسل 11، حافظه 1 تیرابایت', 'completed', 7, 'بهادری', 'کارمند ای تی', 2, 'آیا درخواستی فوق در گدام موجود است؟', '2026-09-27 09:31:44', 'کالا مورد نظر در انبار موجود نیست.', '2026-09-27', '2026-10-07', '2026-09-27 04:58:42', '2026-09-27 05:55:26'),
-(20, 'REQ-2026-0003', 207, NULL, 'بالابر', '1', 'pcs', 'rental', 1.00, 'month', 'شهرک سبز', 0, 'normal', 0, 'جهت پیش برد خشت کاری', 'بمنتبمنتنبتمنیسشتب', 'rental_active', 1, 'مدیر سیستم', '', 1, 'یک پایه بالابر باید برای این ها به کرایه گرفته شود.', '2026-10-11 09:38:04', NULL, '2026-10-11', '2026-10-13', '2026-10-11 05:06:44', '2026-10-11 05:12:51');
+(20, 'REQ-2026-0003', 207, NULL, 'بالابر', '1', 'pcs', 'rental', '1.00', 'month', 'شهرک سبز', 0, 'normal', 0, 'جهت پیش برد خشت کاری', 'بمنتبمنتنبتمنیسشتب', 'rental_active', 1, 'مدیر سیستم', '', 1, 'یک پایه بالابر باید برای این ها به کرایه گرفته شود.', '2026-10-11 09:38:04', NULL, '2026-10-11', '2026-10-13', '2026-10-11 05:06:44', '2026-10-11 05:12:51'),
+(21, 'REQ-2026-0004', 206, NULL, 'مکسر', '1 دانه', 'pcs', 'rental', '1.00', 'month', 'سرک m12', 0, 'normal', 0, 'برای بتون ریزی جویه سرک m12', 'مکسر خورد بسب', 'pending', 7, 'کارمند', '', NULL, NULL, NULL, NULL, '2026-11-10', '2026-11-13', '2026-11-10 06:04:56', '2026-11-10 06:04:56'),
+(22, 'REQ-2026-0005', 206, NULL, 'مکسر', '1 دانه', 'pcs', 'rental', '1.00', 'month', 'سرک m12', 0, 'normal', 0, 'برای بتون ریزی جویه سرک m12', 'مکسر خورد بسب', 'pending', 7, 'کارمند', '', NULL, NULL, NULL, NULL, '2026-11-10', '2026-11-13', '2026-11-10 06:11:55', '2026-11-10 06:11:55'),
+(23, 'REQ-2026-0006', 206, NULL, 'مکسر', '1 دانه', 'pcs', 'rental', '1.00', 'month', 'سرک m12', 0, 'normal', 0, 'برای بتون ریزی جویه سرک m12', 'مکسر خورد بسب', 'pending', 7, 'کارمند', '', NULL, NULL, NULL, NULL, '2026-11-10', '2026-11-13', '2026-11-10 06:14:14', '2026-11-10 06:14:14'),
+(24, 'REQ-2026-0007', 203, 9, 'کمپیوتر', '1', 'pcs', 'purchase', NULL, NULL, NULL, 0, 'normal', 0, 'بنمکشتبکمنشسیتبخهشسیتتمکنبتشیسکمنتبمشسی', 'سبسی ینبمشسنتبشسی بمسشیتب منشسیتبمنشک', '', 7, 'کارمند', '', NULL, NULL, NULL, NULL, '2026-11-10', '2026-11-19', '2026-11-10 06:20:26', '2026-11-10 08:15:13');
 
 -- --------------------------------------------------------
 
@@ -315,8 +319,8 @@ CREATE TABLE `purchases` (
 --
 
 INSERT INTO `purchases` (`id`, `purchase_no`, `request_id`, `supplier_id`, `selected_quotation_id`, `quantity`, `unit_price`, `total_cost`, `currency`, `purchase_date`, `urgency`, `payment_status`, `status`, `approved_by`, `committee_approved`, `committee_note`, `authority_name`, `authority_position`, `authority_approved_by`, `authority_approved_at`, `authority_note`, `finance_method`, `finance_ref_no`, `finance_amount`, `finance_currency`, `finance_note`, `finance_released_by`, `finance_released_at`, `order_registered_by`, `order_registered_at`, `announcement_note`, `created_at`, `updated_at`) VALUES
-(7, 'PUR-2026-0001', 14, 5, NULL, 1.00, 20000.00, 20000.00, 'AFN', '2026-09-26', 'normal', 'pending', 'completed', NULL, 0, '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'AFN', NULL, NULL, NULL, NULL, NULL, '', '2026-09-26 11:37:45', '2026-09-27 04:31:39'),
-(9, 'PUR-2026-0002', 16, 3, 15, 2.00, 25000.00, 50000.00, 'AFN', '2026-09-27', 'normal', 'paid', 'completed', NULL, 1, 'نرخ گیری تکمیل شد.', 'عبدالعالی امین', 'مدیریت اجرائی', 6, '2026-09-27 10:13:44', '', 'cash', '', 50000.00, 'AFN', 'هزینه این درخواست به شکل پول نقد برای بخش تدارکات تسلیم کردید.', 1, '2026-09-27 10:18:46', 2, '2026-09-27 10:20:10', 'سفارش داده شد', '2026-09-27 05:07:12', '2026-09-27 05:55:26');
+(7, 'PUR-2026-0001', 14, 5, NULL, '1.00', '20000.00', '20000.00', 'AFN', '2026-09-26', 'normal', 'pending', 'completed', NULL, 0, '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'AFN', NULL, NULL, NULL, NULL, NULL, '', '2026-09-26 11:37:45', '2026-09-27 04:31:39'),
+(9, 'PUR-2026-0002', 16, 3, 15, '2.00', '25000.00', '50000.00', 'AFN', '2026-09-27', 'normal', 'paid', 'completed', NULL, 1, 'نرخ گیری تکمیل شد.', 'عبدالعالی امین', 'مدیریت اجرائی', 6, '2026-09-27 10:13:44', '', 'cash', '', '50000.00', 'AFN', 'هزینه این درخواست به شکل پول نقد برای بخش تدارکات تسلیم کردید.', 1, '2026-09-27 10:18:46', 2, '2026-09-27 10:20:10', 'سفارش داده شد', '2026-09-27 05:07:12', '2026-09-27 05:55:26');
 
 -- --------------------------------------------------------
 
@@ -340,12 +344,12 @@ CREATE TABLE `quotations` (
 --
 
 INSERT INTO `quotations` (`id`, `request_id`, `supplier_id`, `price`, `currency`, `delivery_days`, `notes`, `created_at`) VALUES
-(10, 14, 5, 400.00, 'USD', 3, '', '2026-09-26 11:38:24'),
-(11, 14, 3, 20000.00, 'AFN', 5, '', '2026-09-26 11:38:51'),
-(12, 14, 1, 500.00, 'USD', 1, '', '2026-09-26 11:39:11'),
-(13, 16, 9, 30000.00, 'AFN', NULL, '', '2026-09-27 05:30:44'),
-(14, 16, 5, 400.00, 'USD', 5, '', '2026-09-27 05:31:29'),
-(15, 16, 3, 25000.00, 'AFN', 10, '', '2026-09-27 05:32:30');
+(10, 14, 5, '400.00', 'USD', 3, '', '2026-09-26 11:38:24'),
+(11, 14, 3, '20000.00', 'AFN', 5, '', '2026-09-26 11:38:51'),
+(12, 14, 1, '500.00', 'USD', 1, '', '2026-09-26 11:39:11'),
+(13, 16, 9, '30000.00', 'AFN', NULL, '', '2026-09-27 05:30:44'),
+(14, 16, 5, '400.00', 'USD', 5, '', '2026-09-27 05:31:29'),
+(15, 16, 3, '25000.00', 'AFN', 10, '', '2026-09-27 05:32:30');
 
 -- --------------------------------------------------------
 
@@ -358,8 +362,6 @@ CREATE TABLE `rental_contracts` (
   `rental_no` varchar(30) NOT NULL,
   `request_id` int(10) UNSIGNED NOT NULL,
   `supplier_name` varchar(150) NOT NULL,
-  `supplier_tazkira_no` varchar(100) DEFAULT NULL,
-  `case_no` varchar(100) DEFAULT NULL,
   `supplier_contact` varchar(100) DEFAULT NULL,
   `supplier_phone` varchar(30) DEFAULT NULL,
   `equipment_name` varchar(150) NOT NULL,
@@ -395,7 +397,7 @@ CREATE TABLE `rental_contracts` (
 --
 
 INSERT INTO `rental_contracts` (`id`, `rental_no`, `request_id`, `supplier_name`, `supplier_contact`, `supplier_phone`, `equipment_name`, `equipment_details`, `quantity`, `rate_amount`, `rate_unit`, `currency`, `deposit_amount`, `start_date`, `planned_end_date`, `handover_date`, `actual_return_date`, `rental_location`, `operator_included`, `operator_name`, `fuel_responsibility`, `maintenance_responsibility`, `handover_condition`, `return_condition`, `meter_start`, `meter_end`, `status`, `notes`, `created_by`, `returned_by`, `created_at`, `updated_at`) VALUES
-(1, 'RNT-2026-0001', 20, 'حاجی باقی', NULL, NULL, 'بالابر', 'بمنتبمنتنبتمنیسشتب', 1.00, 500.00, 'hour', 'AFN', 50000.00, '2026-10-13', '2026-11-11', '2026-10-15', NULL, 'شهرک سبز', 0, NULL, 'company', 'supplier', 'سالم', NULL, 0.00, NULL, 'active', 'مبتمکنتبمن\r\nبیسبکمیستب\r\nبمنیتبمنسیشتبپبسبان\r\nبنتمسشینتب', 1, NULL, '2026-10-11 05:11:37', '2026-10-11 05:12:51');
+(1, 'RNT-2026-0001', 20, 'حاجی باقی', NULL, NULL, 'بالابر', 'بمنتبمنتنبتمنیسشتب', '1.00', '500.00', 'hour', 'AFN', '50000.00', '2026-10-13', '2026-11-11', '2026-10-15', NULL, 'شهرک سبز', 0, NULL, 'company', 'supplier', 'سالم', NULL, '0.00', NULL, 'active', 'مبتمکنتبمن\r\nبیسبکمیستب\r\nبمنیتبمنسیشتبپبسبان\r\nبنتمسشینتب', 1, NULL, '2026-10-11 05:11:37', '2026-10-11 05:12:51');
 
 -- --------------------------------------------------------
 
@@ -431,6 +433,35 @@ CREATE TABLE `rental_payments` (
   `recorded_by` int(10) UNSIGNED NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `request_committee_approvals`
+--
+
+CREATE TABLE `request_committee_approvals` (
+  `id` int(10) UNSIGNED NOT NULL,
+  `request_id` int(10) UNSIGNED NOT NULL,
+  `committee_key` enum('procurement','contracting','finance','department') NOT NULL,
+  `department_id` int(10) UNSIGNED DEFAULT NULL,
+  `assigned_user_id` int(10) UNSIGNED DEFAULT NULL,
+  `decision` enum('pending','approved','rejected') NOT NULL DEFAULT 'pending',
+  `comment` text DEFAULT NULL,
+  `decided_by` int(10) UNSIGNED DEFAULT NULL,
+  `decided_at` datetime DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `request_committee_approvals`
+--
+
+INSERT INTO `request_committee_approvals` (`id`, `request_id`, `committee_key`, `department_id`, `assigned_user_id`, `decision`, `comment`, `decided_by`, `decided_at`, `created_at`) VALUES
+(1, 24, 'procurement', NULL, NULL, 'pending', NULL, NULL, NULL, '2026-11-10 08:15:13'),
+(2, 24, 'contracting', NULL, NULL, 'pending', NULL, NULL, NULL, '2026-11-10 08:15:13'),
+(3, 24, 'finance', NULL, NULL, 'pending', NULL, NULL, NULL, '2026-11-10 08:15:13'),
+(4, 24, 'department', 205, 9, 'pending', NULL, NULL, NULL, '2026-11-10 08:15:13');
 
 -- --------------------------------------------------------
 
@@ -493,7 +524,9 @@ INSERT INTO `users` (`id`, `username`, `password`, `name`, `role`, `department_i
 (5, 'committee', '$2y$10$pGRKXtjZnTUeCOCnPWwEWeOAx7.P/PToiwCM7MlcpbvAGKFlQ9swu', 'عضو کمیته', 'committee', 3, 'committee@khawar.pk', '0300-0000005', 1, '2026-09-24 08:19:01'),
 (6, 'gm', '$2y$10$pGRKXtjZnTUeCOCnPWwEWeOAx7.P/PToiwCM7MlcpbvAGKFlQ9swu', 'مدیر عمومی', 'general_manager', 1, 'gm@khawar.pk', '0300-0000006', 1, '2026-09-24 08:19:01'),
 (7, 'employee', '$2y$10$pGRKXtjZnTUeCOCnPWwEWeOAx7.P/PToiwCM7MlcpbvAGKFlQ9swu', 'کارمند', 'employee', 1, 'karmand@khawar.pk', '0300-0000007', 1, '2026-09-24 08:19:01'),
-(8, 'finance', '$2y$10$pGRKXtjZnTUeCOCnPWwEWeOAx7.P/PToiwCM7MlcpbvAGKFlQ9swu', 'مدیر مالی', 'finance', 3, 'finance@khawar.pk', '0300-0000008', 1, '2026-09-27 04:28:56');
+(8, 'finance', '$2y$10$pGRKXtjZnTUeCOCnPWwEWeOAx7.P/PToiwCM7MlcpbvAGKFlQ9swu', 'مدیر مالی', 'finance', 3, 'finance@khawar.pk', '0300-0000008', 1, '2026-09-27 04:28:56'),
+(9, 'sayed', '$2y$10$Zuocj8f7S6m.skxQeu2gMOSvwAkLecGqQ9x99heBoXcxvXvwLmSOG', 'سید اسحاق', 'employee', 205, 'dasfdfjlaf@mail.com', NULL, 1, '2026-11-10 06:30:44'),
+(10, 'sayed@123', '$2y$10$oq37V23roVzEENveCqwKY.jInBvsjEuaz2XlCU.f44nHLOblnT2lm', 'سید اسحاق', 'employee', 205, 'dasfdfjlaf@mail.com', NULL, 1, '2026-11-10 06:31:26');
 
 -- --------------------------------------------------------
 
@@ -519,17 +552,17 @@ CREATE TABLE `warehouse_items` (
 --
 
 INSERT INTO `warehouse_items` (`id`, `name`, `category_id`, `quantity`, `unit`, `location`, `min_stock`, `notes`, `created_at`, `updated_at`) VALUES
-(1, 'سیمان (کیسه ۵۰ کیلویی لکی)', 8, 250.00, 'bag', 'سوله A / قفسه ۱', 50.00, 'موجودی پس از صدور', '2026-09-24 08:19:01', '2026-09-24 08:19:01'),
-(2, 'میلگرد ۱۲ میلی‌متری', 8, 12.50, 'ton', 'سوله B', 2.00, NULL, '2026-09-24 08:19:01', '2026-09-24 08:19:01'),
-(3, 'بسته کاغذ A4', 5, 180.00, 'ream', 'اتاق انبار ۱', 20.00, NULL, '2026-09-24 08:19:01', '2026-09-24 08:19:01'),
-(4, 'صندلی اداری (مدیریتی)', 4, 15.00, 'pcs', 'اتاق انبار ۲', 2.00, NULL, '2026-09-24 08:19:01', '2026-09-24 08:19:01'),
-(5, 'کلاه ایمنی', 10, 45.00, 'pcs', 'قفسه ایمنی', 10.00, NULL, '2026-09-24 08:19:01', '2026-09-24 08:19:01'),
-(6, 'ژنراتور دیزلی ۵۰۰۰ وات', 1, 2.00, 'pcs', 'محوطه ماشین‌آلات', 1.00, NULL, '2026-09-24 08:19:01', '2026-09-24 08:19:01'),
-(7, 'دریل کارگاه', 7, 6.00, 'pcs', 'قفس ابزار', 1.00, NULL, '2026-09-24 08:19:01', '2026-09-24 08:19:01'),
-(8, 'کانتینر فولادی ۲۰ فوت', 2, 3.00, 'pcs', 'حیاط بیرونی', 1.00, NULL, '2026-09-24 08:19:01', '2026-09-24 08:19:01'),
-(9, 'سطل پلاستیکی', 6, 40.00, 'pcs', 'قفسه آشپزخانه', 10.00, NULL, '2026-09-24 08:19:01', '2026-09-24 08:19:01'),
-(10, 'پرینتر 6 رنگه همه کار', 9, 1.00, 'pcs', NULL, 1.00, 'شبیسشب', '2026-09-26 11:50:42', '2026-09-26 11:50:42'),
-(11, 'UPS Unit', NULL, 2.00, 'pcs', 'Rack A', 1.00, 'خریداری شده PUR-2026-0001', '2026-09-27 04:31:39', '2026-09-27 04:31:39');
+(1, 'سیمان (کیسه ۵۰ کیلویی لکی)', 8, '250.00', 'bag', 'سوله A / قفسه ۱', '50.00', 'موجودی پس از صدور', '2026-09-24 08:19:01', '2026-09-24 08:19:01'),
+(2, 'میلگرد ۱۲ میلی‌متری', 8, '12.50', 'ton', 'سوله B', '2.00', NULL, '2026-09-24 08:19:01', '2026-09-24 08:19:01'),
+(3, 'بسته کاغذ A4', 5, '180.00', 'ream', 'اتاق انبار ۱', '20.00', NULL, '2026-09-24 08:19:01', '2026-09-24 08:19:01'),
+(4, 'صندلی اداری (مدیریتی)', 4, '15.00', 'pcs', 'اتاق انبار ۲', '2.00', NULL, '2026-09-24 08:19:01', '2026-09-24 08:19:01'),
+(5, 'کلاه ایمنی', 10, '45.00', 'pcs', 'قفسه ایمنی', '10.00', NULL, '2026-09-24 08:19:01', '2026-09-24 08:19:01'),
+(6, 'ژنراتور دیزلی ۵۰۰۰ وات', 1, '2.00', 'pcs', 'محوطه ماشین‌آلات', '1.00', NULL, '2026-09-24 08:19:01', '2026-09-24 08:19:01'),
+(7, 'دریل کارگاه', 7, '6.00', 'pcs', 'قفس ابزار', '1.00', NULL, '2026-09-24 08:19:01', '2026-09-24 08:19:01'),
+(8, 'کانتینر فولادی ۲۰ فوت', 2, '3.00', 'pcs', 'حیاط بیرونی', '1.00', NULL, '2026-09-24 08:19:01', '2026-09-24 08:19:01'),
+(9, 'سطل پلاستیکی', 6, '40.00', 'pcs', 'قفسه آشپزخانه', '10.00', NULL, '2026-09-24 08:19:01', '2026-09-24 08:19:01'),
+(10, 'پرینتر 6 رنگه همه کار', 9, '1.00', 'pcs', NULL, '1.00', 'شبیسشب', '2026-09-26 11:50:42', '2026-09-26 11:50:42'),
+(11, 'UPS Unit', NULL, '2.00', 'pcs', 'Rack A', '1.00', 'خریداری شده PUR-2026-0001', '2026-09-27 04:31:39', '2026-09-27 04:31:39');
 
 --
 -- Indexes for dumped tables
@@ -641,6 +674,17 @@ ALTER TABLE `rental_payments`
   ADD KEY `fk_rental_payment_user` (`recorded_by`);
 
 --
+-- Indexes for table `request_committee_approvals`
+--
+ALTER TABLE `request_committee_approvals`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uq_request_committee` (`request_id`,`committee_key`),
+  ADD KEY `idx_committee_assignment` (`committee_key`,`assigned_user_id`,`decision`),
+  ADD KEY `fk_req_committee_department` (`department_id`),
+  ADD KEY `fk_req_committee_assignee` (`assigned_user_id`),
+  ADD KEY `fk_req_committee_decider` (`decided_by`);
+
+--
 -- Indexes for table `suppliers`
 --
 ALTER TABLE `suppliers`
@@ -700,7 +744,7 @@ ALTER TABLE `gate_checklists`
 -- AUTO_INCREMENT for table `procurement_requests`
 --
 ALTER TABLE `procurement_requests`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT for table `purchases`
@@ -733,6 +777,12 @@ ALTER TABLE `rental_payments`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `request_committee_approvals`
+--
+ALTER TABLE `request_committee_approvals`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
 -- AUTO_INCREMENT for table `suppliers`
 --
 ALTER TABLE `suppliers`
@@ -742,7 +792,7 @@ ALTER TABLE `suppliers`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `warehouse_items`
@@ -834,6 +884,15 @@ ALTER TABLE `rental_extensions`
 ALTER TABLE `rental_payments`
   ADD CONSTRAINT `fk_rental_payment_contract` FOREIGN KEY (`rental_id`) REFERENCES `rental_contracts` (`id`),
   ADD CONSTRAINT `fk_rental_payment_user` FOREIGN KEY (`recorded_by`) REFERENCES `users` (`id`);
+
+--
+-- Constraints for table `request_committee_approvals`
+--
+ALTER TABLE `request_committee_approvals`
+  ADD CONSTRAINT `fk_req_committee_assignee` FOREIGN KEY (`assigned_user_id`) REFERENCES `users` (`id`),
+  ADD CONSTRAINT `fk_req_committee_decider` FOREIGN KEY (`decided_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_req_committee_department` FOREIGN KEY (`department_id`) REFERENCES `departments` (`id`),
+  ADD CONSTRAINT `fk_req_committee_request` FOREIGN KEY (`request_id`) REFERENCES `procurement_requests` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `warehouse_items`

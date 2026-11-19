@@ -30,6 +30,8 @@ For an existing database, apply the required upgrade scripts in order, ending wi
 On XAMPP, run the applicable upgrade from Command Prompt, for example: `C:\xampp\mysql\bin\mysql.exe -u root procurement_warehouse_ms < C:\xampp\htdocs\ProcurementWarehouseMS\database\upgrade_v9.sql`.
 After upgrading an existing database, use **Admin → Users** to create or assign a user the new **Contracting Department Reviewer** role; fresh installs seed a demo `contracting` account with password `password`.
 
+If the application reports that `request_committee_approvals` does not exist, the active database is missing a table required by the request workflow. Back up the database, then run `database/repair_request_committee_approvals.sql` against `procurement_warehouse_ms` from Command Prompt or import it through phpMyAdmin. This repair creates only the missing table and preserves existing request data. Do not run `install.php` to resolve this error; it drops and recreates the application tables.
+
 `database/procurement_warehouse.sql` is the schema and seed script used by the installer. `database/procurement_warehouse_ms.sql` is a separate SQL dump and is not loaded by the installer; use it only when intentionally restoring that dump.
 
 ## Project Structure
